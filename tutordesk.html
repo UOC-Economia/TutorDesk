@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de tutorización · UOC Economía</title>
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #1a1a2e; font-size: 13px; line-height: 1.5; }
+
+/* ── LAYOUT ── */
+.dash { display: grid; grid-template-columns: 268px 1fr; grid-template-rows: 48px 1fr; height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar { grid-column: 1 / -1; background: #002147; display: flex; align-items: center; padding: 0 20px; gap: 12px; justify-content: space-between; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.logo { background: #fff; color: #002147; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.05em; }
+.topbar-title { color: #fff; font-size: 14px; font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.stream-toggle { display: flex; gap: 2px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2px; }
+.st-btn { padding: 3px 12px; border-radius: 18px; border: none; background: transparent; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.15s; }
+.st-btn.active { background: rgba(255,255,255,0.2); color: #fff; }
+.lang-row { display: flex; gap: 2px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2px; }
+.lang-btn { padding: 3px 10px; border-radius: 18px; border: none; background: transparent; color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.lang-btn.active { background: rgba(255,255,255,0.2); color: #fff; }
+
+/* ── SIDEBAR ── */
+.sidebar { background: #f8f9fb; border-right: 1px solid #e2e6ec; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.sb-card { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; padding: 10px 12px; }
+.sb-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.student-header { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: #e8edf4; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #002147; flex-shrink: 0; }
+.stu-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.stu-sub { font-size: 11px; color: #8b95a1; }
+.badge-mat { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 20px; margin-top: 2px; }
+.b1 { background: #dbeafe; color: #1e40af; }
+.b2 { background: #d1fae5; color: #065f46; }
+.b3 { background: #fef3c7; color: #92400e; }
+.field-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px solid #f0f2f5; }
+.field-row:last-child { border-bottom: none; }
+.fk { font-size: 11px; color: #8b95a1; flex-shrink: 0; max-width: 108px; line-height: 1.3; }
+.fv { font-size: 11px; font-weight: 500; color: #1a1a2e; text-align: right; max-width: 120px; word-break: break-word; line-height: 1.3; }
+.fv.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
+.sync-btn { width: 100%; padding: 7px; border-radius: 8px; border: 1px solid #e2e6ec; background: #fff; color: #5a6578; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s; }
+.sync-btn:hover { background: #f0f2f5; }
+.sync-btn:disabled { opacity: 0.55; cursor: default; }
+
+/* ── STU LIST ── */
+.stu-list-item { padding: 6px 10px; font-size: 12px; color: #1a1a2e; cursor: pointer; border-bottom: 0.5px solid #f0f2f5; display: flex; flex-direction: column; gap: 1px; }
+.stu-list-item:last-child { border-bottom: none; }
+.stu-list-item:hover { background: #f0f4ff; }
+.stu-list-item .stu-list-name { font-weight: 500; }
+.stu-list-item .stu-list-idp { font-size: 10px; color: #8b95a1; }
+.stu-list-empty { padding: 8px 10px; font-size: 12px; color: #8b95a1; text-align: center; }
+
+/* ── SHEET SELECTOR ── */
+.sheet-selector-wrap { display: flex; gap: 6px; align-items: center; }
+.sheet-select { flex: 1; padding: 5px 8px; border-radius: 7px; border: 1px solid #e2e6ec; font-size: 12px; color: #1a1a2e; background: #fff; outline: none; cursor: pointer; transition: border-color 0.15s; }
+.sheet-select:focus { border-color: #002147; }
+.sheet-select:disabled { opacity: 0.5; cursor: default; }
+.sheet-load-btn { padding: 5px 9px; border-radius: 7px; border: none; background: #f0f2f5; color: #5a6578; font-size: 12px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.sheet-load-btn:hover { background: #e2e6ec; }
+
+/* ── IDP SEARCH ── */
+.idp-search-wrap { display: flex; gap: 6px; align-items: center; }
+.idp-input { flex: 1; padding: 5px 8px; border-radius: 7px; border: 1px solid #e2e6ec; font-size: 12px; color: #1a1a2e; background: #fff; outline: none; transition: border-color 0.15s; }
+.idp-input:focus { border-color: #002147; }
+.idp-input::placeholder { color: #b0b8c4; }
+.idp-go-btn { padding: 5px 10px; border-radius: 7px; border: none; background: #002147; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+.idp-go-btn:hover { opacity: 0.85; }
+.idp-go-btn:disabled { opacity: 0.45; cursor: default; }
+.sync-msg { font-size: 11px; margin-top: 5px; min-height: 16px; }
+.inf-value { font-size: 12px; color: #1a1a2e; background: #f8fafc; border: 1px solid #e2e6ec; border-radius: 6px; padding: 5px 8px; min-height: 28px; }
+.inf-value.empty { color: #b0b8c4; }
+.sync-msg.ok  { color: #065f46; }
+.sync-msg.err { color: #991b1b; }
+.sync-msg.info{ color: #1e40af; }
+
+/* ── MAIN ── */
+.main { padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: #f0f2f5; }
+
+/* ── MAIN TABS ── */
+.main-tabs { display: flex; gap: 4px; background: #e2e6ec; border-radius: 9px; padding: 3px; }
+.main-tab { flex: 1; padding: 6px 10px; border: none; border-radius: 7px; background: transparent; font-size: 12px; font-weight: 500; color: #5a6578; cursor: pointer; transition: all 0.15s; }
+.main-tab.active { background: #002147; color: #fff; }
+
+/* ── MAT TABS ── */
+.mat-tabs { display: flex; gap: 5px; }
+.mat-tab { flex: 1; padding: 7px 6px; border-radius: 8px; border: 1px solid #e2e6ec; background: #fff; font-size: 11px; font-weight: 600; color: #8b95a1; cursor: pointer; text-align: center; transition: all 0.15s; }
+.mat-tab.t1.active { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+.mat-tab.t2.active { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.mat-tab.t3.active { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+/* ── SITUACIONES ── */
+.section-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.sit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.sit-btn { padding: 7px 10px; border-radius: 8px; border: 1px solid #e2e6ec; background: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; transition: all 0.15s; }
+.sit-btn:hover { border-color: #b0bac5; background: #f8f9fb; }
+.sit-btn.active { border-color: #002147; background: #e8edf4; }
+.sit-icon { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; }
+.sit-text { flex: 1; min-width: 0; }
+.sit-label { font-size: 11px; font-weight: 600; color: #1a1a2e; line-height: 1.2; }
+.sit-sub { font-size: 10px; color: #8b95a1; font-style: italic; line-height: 1.2; margin-top: 1px; }
+.sit-btn.active .sit-label { color: #002147; }
+.sit-btn.active .sit-sub { color: #3b6ea8; }
+.sit-btn.good .sit-icon { color: #059669; }
+.sit-btn.warn .sit-icon { color: #d97706; }
+.sit-btn.bad .sit-icon { color: #dc2626; }
+.sit-btn.neu .sit-icon { color: #002147; }
+
+/* ── CFGS ── */
+.cfgs-wrap { background: #fff; border: 1px solid #e2e6ec; border-radius: 8px; padding: 9px 11px; display: none; }
+.cfgs-wrap.visible { display: block; }
+.cfgs-label { font-size: 11px; color: #5a6578; margin-bottom: 5px; }
+.cfgs-select { width: 100%; padding: 6px 9px; border-radius: 7px; border: 1px solid #e2e6ec; background: #f8f9fb; font-size: 12px; color: #1a1a2e; cursor: pointer; }
+.cfgs-select:focus { outline: none; border-color: #002147; }
+
+/* ── OPCIONES CONVALIDACIONES (checkbox horizontal) ── */
+.conv-options { background: #fff; border: 1px solid #e2e6ec; border-radius: 8px; padding: 8px 11px; display: none; }
+.conv-options.visible { display: block; }
+.conv-options-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px; }
+.conv-check-rows { display: flex; gap: 8px; }
+.conv-check-row { display: flex; align-items: center; gap: 7px; padding: 5px 9px; border-radius: 7px; border: 1px solid #e2e6ec; cursor: pointer; user-select: none; flex: 1; background: #f8f9fb; transition: all 0.15s; }
+.conv-check-row:hover { border-color: #b0bac5; }
+.conv-check-row.active { background: #dbeafe; border-color: #93c5fd; }
+.conv-check-row input[type=checkbox] { width: 13px; height: 13px; accent-color: #002147; cursor: pointer; flex-shrink: 0; }
+.conv-check-text { flex: 1; min-width: 0; }
+.conv-check-name { font-size: 11px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
+.conv-check-desc { font-size: 10px; color: #8b95a1; margin-top: 1px; font-style: italic; line-height: 1.2; }
+
+/* ── ASIGNATURAS ── */
+.asig-toggle-btn { display: none; width: 100%; padding: 7px 12px; border-radius: 8px; border: 1px solid #e2e6ec; background: #fff; font-size: 12px; font-weight: 500; color: #5a6578; cursor: pointer; text-align: left; align-items: center; justify-content: space-between; transition: all 0.15s; }
+.asig-toggle-btn.visible { display: flex; }
+.asig-toggle-btn.open { border-color: #002147; color: #002147; background: #e8edf4; }
+.asig-panel { display: none; background: #fff; border: 1px solid #e2e6ec; border-radius: 8px; padding: 10px 11px; }
+.asig-panel.open { display: block; }
+.asig-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.asig-panel-label { font-size: 11px; color: #5a6578; font-weight: 500; }
+.asig-clear { font-size: 11px; color: #8b95a1; border: none; background: none; cursor: pointer; padding: 0; }
+.asig-clear:hover { color: #dc2626; }
+.asig-filter-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 7px; }
+.asig-filter { padding: 2px 8px; border-radius: 20px; border: 1px solid #e2e6ec; background: transparent; font-size: 10px; color: #5a6578; cursor: pointer; transition: all 0.15s; }
+.asig-filter.active { background: #002147; color: #fff; border-color: #002147; }
+.asig-group-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.07em; text-transform: uppercase; padding: 5px 0 3px; }
+.asig-list { display: flex; flex-direction: column; gap: 1px; max-height: 210px; overflow-y: auto; }
+.asig-item { display: flex; align-items: flex-start; gap: 7px; padding: 5px 6px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; user-select: none; transition: background 0.1s; }
+.asig-item:hover { background: #f8f9fb; }
+.asig-item.checked { background: #dbeafe; border-color: #93c5fd; }
+.asig-cb { width: 13px; height: 13px; flex-shrink: 0; accent-color: #002147; cursor: pointer; margin-top: 2px; pointer-events: none; }
+.asig-right { display: flex; align-items: flex-start; gap: 6px; flex: 1; min-width: 0; }
+.asig-item-info { flex: 1; min-width: 0; }
+.asig-item-name { font-size: 11px; color: #1a1a2e; line-height: 1.3; }
+.asig-item-req { font-size: 10px; color: #8b95a1; margin-top: 2px; font-style: italic; line-height: 1.3; }
+.asig-item-sem { font-size: 10px; padding: 1px 6px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; font-weight: 500; }
+.sem-tots { background: #dbeafe; color: #1e40af; }
+.sem-sep { background: #d1fae5; color: #065f46; }
+.sem-feb { background: #fef3c7; color: #92400e; }
+.asig-preview { font-size: 10px; color: #5a6578; padding: 5px 0 1px; border-top: 1px solid #f0f2f5; margin-top: 6px; line-height: 1.5; display: none; }
+
+/* ── PLANTILLA ── */
+.tpl-area { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; padding: 13px; }
+.tpl-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.tpl-meta { flex: 1; }
+.tpl-title { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.tpl-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: #e8edf4; color: #3b6ea8; margin-top: 4px; display: none; width: fit-content; font-weight: 500; }
+.copy-btn { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 7px; border: 1px solid #e2e6ec; background: #f8f9fb; font-size: 12px; font-weight: 500; color: #1a1a2e; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
+.copy-btn:hover { background: #e8edf4; border-color: #002147; }
+.copy-btn.copied { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.var-info { display: none; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.var-auto, .var-manual { font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid #fcd34d; background: #fef9ee; color: #92400e; }
+.tpl-body textarea { width: 100%; min-height: 200px; background: #f8f9fb; border: 1px solid #e2e6ec; border-radius: 8px; padding: 10px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 12px; color: #1a1a2e; line-height: 1.65; resize: vertical; outline: none; }
+.tpl-body textarea:focus { border-color: #002147; }
+
+/* ── SECCIONES ── */
+.sec-hidden { display: none; }
+.sec-visible { display: flex; flex-direction: column; gap: 11px; }
+
+/* ── ENLACES ── */
+.enl-seg-tabs { display: flex; gap: 4px; background: #e2e6ec; border-radius: 9px; padding: 3px; margin-bottom: 10px; }
+.enl-seg-btn { flex: 1; padding: 6px 10px; border: none; border-radius: 7px; background: transparent; font-size: 12px; font-weight: 500; color: #5a6578; cursor: pointer; transition: all 0.15s; }
+.enl-seg-btn.active { background: #002147; color: #fff; }
+.enl-group { display: none; flex-direction: column; gap: 6px; }
+.enl-group.active { display: flex; }
+.enl-item { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; overflow: hidden; }
+.enl-item-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; cursor: pointer; user-select: none; transition: background 0.12s; }
+.enl-item-header:hover { background: #f8f9fb; }
+.enl-item-header.open { background: #e8edf4; border-bottom: 1px solid #e2e6ec; }
+.enl-item-left { display: flex; align-items: center; gap: 9px; }
+.enl-icon { font-size: 16px; flex-shrink: 0; }
+.enl-title { font-size: 12px; font-weight: 600; color: #1a1a2e; }
+.enl-chevron { font-size: 11px; color: #8b95a1; transition: transform 0.15s; }
+.enl-chevron.open { transform: rotate(180deg); }
+.enl-body { display: none; padding: 10px 13px; background: #f8f9fb; }
+.enl-body.open { display: block; }
+.enl-ruta { font-size: 11px; color: #3b6ea8; line-height: 1.65; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; word-break: break-word; }
+.enl-ruta-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 3px; margin-top: 8px; }
+.enl-ruta-label:first-child { margin-top: 0; }
+.enl-copy-row { display: flex; gap: 5px; margin-top: 5px; }
+.enl-copy-btn { font-size: 10px; padding: 3px 9px; border-radius: 6px; border: 1px solid #e2e6ec; background: #fff; color: #5a6578; cursor: pointer; transition: all 0.12s; }
+.enl-copy-btn:hover { background: #e8edf4; border-color: #002147; color: #002147; }
+.enl-copy-btn.copied { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.enl-checklist { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e6ec; }
+.enl-checklist-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px; }
+.enl-check-item { display: flex; align-items: flex-start; gap: 7px; padding: 4px 0; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+.enl-check-item:last-child { border-bottom: none; }
+.enl-check-item input[type=checkbox], .enl-check-item input[type=radio] { margin-top: 2px; width: 12px; height: 12px; accent-color: #002147; cursor: pointer; flex-shrink: 0; }
+.enl-check-item a { font-size: 11px; color: #3b6ea8; text-decoration: none; line-height: 1.4; }
+.enl-check-item a:hover { text-decoration: underline; }
+.enl-check-item span { font-size: 11px; color: #5a6578; line-height: 1.4; }
+/* Subopciones de ruta */
+.enl-suboptions { margin-top: 7px; padding-top: 7px; border-top: 1px solid #e2e6ec; display: flex; flex-direction: column; gap: 2px; }
+.enl-subopt { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; cursor: pointer; }
+.enl-subopt input[type=checkbox] { margin-top: 2px; width: 12px; height: 12px; accent-color: #002147; cursor: pointer; flex-shrink: 0; }
+.enl-subopt span { font-size: 11px; color: #5a6578; line-height: 1.4; cursor: pointer; }
+.enl-subopt span:hover { color: #002147; }
+.enl-ruta-result { font-size: 11px; color: #002147; font-weight: 500; background: #e8edf4; border-radius: 6px; padding: 5px 8px; line-height: 1.55; word-break: break-word; }
+/* Stream visibility */
+.ruta-es { display: block; }
+.ruta-ca { display: none; }
+body.ct-stream .ruta-es { display: none; }
+body.ct-stream .ruta-ca { display: block; }
+.enl-copy-btn.ib-only { display: inline-block; }
+.enl-copy-btn.ct-only { display: none; }
+body.ct-stream .enl-copy-btn.ib-only { display: none; }
+body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
+
+/* ── INFORME ── */
+.inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.inf-field { background: #fff; border: 1px solid #e2e6ec; border-radius: 8px; padding: 8px 10px; }
+.inf-field-wide { grid-column: 1 / -1; }
+.inf-field-label { font-size: 10px; color: #8b95a1; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
+.inf-field-val { font-size: 12px; font-weight: 500; color: #1a1a2e; }
+.inf-field-val.empty { color: #c5cdd6; font-style: italic; font-weight: 400; font-size: 11px; }
+.inf-select { width: 100%; font-size: 12px; color: #1a1a2e; border: none; background: transparent; outline: none; cursor: pointer; padding: 2px 0; }
+.inf-select:focus { outline: none; }
+.inf-textarea { width: 100%; font-size: 12px; color: #1a1a2e; border: none; background: transparent; outline: none; resize: vertical; font-family: inherit; line-height: 1.5; padding: 2px 0; }
+.inf-textarea::placeholder { color: #c5cdd6; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="dash">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">UOC</div>
+      <div class="topbar-title" id="tb-title">Dashboard de tutorización</div>
+    </div>
+    <div class="topbar-right">
+      <div class="stream-toggle">
+        <button class="st-btn active" id="st-ib" onclick="setStream('IB')">IB</button>
+        <button class="st-btn" id="st-ct" onclick="setStream('CT')">CT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-card">
+      <div class="sb-label" id="lbl-pestaña">Pestaña del Sheets</div>
+      <div class="sheet-selector-wrap">
+        <select class="sheet-select" id="sheet-select" disabled onchange="onTabChange()">
+          <option value="">— carga las pestañas —</option>
+        </select>
+        <button class="sheet-load-btn" id="sheet-load-btn" onclick="loadSheetNames()" title="Cargar pestañas">↻</button>
+      </div>
+      <div class="sync-msg" id="sheet-msg"></div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-label" id="lbl-buscar">Buscar alumno</div>
+      <input class="idp-input" id="stu-search" type="text" placeholder="Nombre o IDP…"
+             oninput="filterStudents(this.value)"
+             style="width:100%;margin-bottom:6px;box-sizing:border-box">
+      <div id="stu-list" style="max-height:180px;overflow-y:auto;border-radius:7px;display:none"></div>
+      <div class="sync-msg" id="sync-msg"></div>
+    </div>
+
+    <button class="sync-btn" id="btn-sync-clear" onclick="clearStudent()" style="display:none">
+      ✕ <span id="lbl-clear">Limpiar alumno</span>
+    </button>
+
+    <div class="sb-card">
+      <div class="sb-label" id="lbl-alumno">Alumno activo</div>
+      <div class="student-header">
+        <div class="avatar" id="stu-av">—</div>
+        <div>
+          <div class="stu-name" id="stu-name">Sin seleccionar</div>
+          <div class="stu-sub" id="stu-idp">IDP: —</div>
+        </div>
+      </div>
+      <div id="stu-badge"></div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-label" id="lbl-personal">Datos personales (D–I)</div>
+      <div id="fields-personal"></div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-label" id="lbl-info">Información del estudiante (O–W)</div>
+      <div id="fields-info"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchMain('tut',this)" id="mtab-tut">Tutorización</button>
+      <button class="main-tab" onclick="switchMain('enl',this)" id="mtab-enl">Enlaces</button>
+      <button class="main-tab" onclick="switchMain('inf',this)" id="mtab-inf">Informe</button>
+    </div>
+
+    <!-- ═══ TUTORIZACIÓN ═══ -->
+    <div id="sec-tut" class="sec-visible">
+
+      <div class="mat-tabs">
+        <button class="mat-tab t1 active" onclick="switchMat(1,this)" id="mb1">1ª matrícula</button>
+        <button class="mat-tab t2" onclick="switchMat(2,this)" id="mb2">Rematrícula</button>
+      </div>
+
+      <div>
+        <div class="section-label" id="lbl-sit">Situación</div>
+        <div class="sit-grid" id="sit-grid"></div>
+      </div>
+
+      <!-- Convalidaciones como opciones adicionales -->
+      <div class="conv-options" id="conv-options">
+        <div class="conv-options-label" id="conv-options-label">Añadir al mensaje</div>
+        <div class="conv-check-rows">
+          <label class="conv-check-row" id="conv-row-cfgs">
+            <input type="checkbox" id="chk-cfgs" onchange="onConvChange()">
+            <div class="conv-check-text">
+              <div class="conv-check-name" id="conv-cfgs-name">Convalidaciones CFGS</div>
+              <div class="conv-check-desc" id="conv-cfgs-desc">Inserta bloque EEP/AEP con CFGS</div>
+            </div>
+          </label>
+          <label class="conv-check-row" id="conv-row-grado">
+            <input type="checkbox" id="chk-grado" onchange="onConvChange()">
+            <div class="conv-check-text">
+              <div class="conv-check-name" id="conv-grado-name">Convalidaciones grado</div>
+              <div class="conv-check-desc" id="conv-grado-desc">Inserta bloque EEP/AEP con estudios universitarios</div>
+            </div>
+          </label>
+          <label class="conv-check-row" id="conv-row-3a" style="display:none">
+            <input type="checkbox" id="chk-3a" onchange="onConvChange()">
+            <div class="conv-check-text">
+              <div class="conv-check-name" id="conv-3a-name">3ª matrícula</div>
+              <div class="conv-check-desc" id="conv-3a-desc">Añade aviso de cambio de tutor/a</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Asignatura extra 2ª matrícula propuesta recomendada -->
+      <div class="conv-options" id="extra-asig-wrap" style="display:none">
+        <div class="conv-options-label" id="extra-asig-label">Sugerir asignatura adicional</div>
+        <div class="conv-check-rows">
+          <label class="conv-check-row" id="extra-asig-row">
+            <input type="checkbox" id="chk-extra-asig" onchange="onExtraAsigChange()">
+            <div class="conv-check-text">
+              <div class="conv-check-name" id="extra-asig-name">Añadir sugerencia de asignatura extra</div>
+              <div class="conv-check-desc" id="extra-asig-desc">Inserta párrafo opcional con recomendación de aumentar carga</div>
+            </div>
+          </label>
+        </div>
+        <div id="extra-asig-input" style="display:none;margin-top:6px">
+          <select id="mat2-extra-nom" onchange="rebuildTemplate()"
+            style="width:100%;padding:6px 9px;border-radius:7px;border:1px solid #e2e6ec;font-size:12px;color:#1a1a2e;background:#f8f9fb;cursor:pointer">
+            <option value="">— Escoge la asignatura extra —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Selector CFGS (aparece si chk-cfgs marcado) -->
+      <div class="cfgs-wrap" id="cfgs-wrap">
+        <div class="cfgs-label" id="cfgs-label">Selecciona el CFGS del estudiante</div>
+        <select class="cfgs-select" id="cfgs-select" onchange="rebuildTemplate()">
+          <option value="">— Escoge el CFGS —</option>
+        </select>
+      </div>
+
+      <!-- Botón toggle asignaturas -->
+      <button class="asig-toggle-btn" id="asig-toggle-btn" onclick="toggleAsigPanel()">
+        <span id="asig-toggle-label">Asignaturas recomendadas</span>
+        <span id="asig-toggle-icon">▾</span>
+      </button>
+
+      <div class="asig-panel" id="asig-panel">
+        <div class="asig-panel-header">
+          <span class="asig-panel-label" id="asig-panel-label">Selecciona las asignaturas</span>
+          <button class="asig-clear" onclick="clearAsig()" id="asig-clear-btn">Limpiar selección</button>
+        </div>
+        <div class="asig-filter-row">
+          <button class="asig-filter active" onclick="setAsigFilter('all',this)" id="af-all">Todas</button>
+          <button class="asig-filter" onclick="setAsigFilter('sep',this)" id="af-sep">Septiembre</button>
+          <button class="asig-filter" onclick="setAsigFilter('feb',this)" id="af-feb">Febrero</button>
+          <button class="asig-filter" onclick="setAsigFilter('tots',this)" id="af-tots">Ambos</button>
+          <button class="asig-filter" onclick="setAsigFilter('bas',this)" id="af-bas">Básicas</button>
+          <button class="asig-filter" onclick="setAsigFilter('obl',this)" id="af-obl">Obligatorias</button>
+          <button class="asig-filter" onclick="setAsigFilter('opt',this)" id="af-opt">Optativas</button>
+        </div>
+        <div class="asig-list" id="asig-list"></div>
+        <div class="asig-preview" id="asig-preview"></div>
+      </div>
+
+      <!-- Plantilla -->
+      <div class="tpl-area">
+        <div class="tpl-header">
+          <div class="tpl-meta">
+            <div class="tpl-title" id="tpl-title">Selecciona una situación</div>
+            <div class="tpl-badge" id="tpl-badge"></div>
+          </div>
+          <button class="copy-btn" id="copy-btn" onclick="doCopy('tpl-ta','copy-btn','copy-lbl')">
+            ⎘ <span id="copy-lbl">Copiar</span>
+          </button>
+        </div>
+        <div class="var-info" id="var-info">
+          <span class="var-auto" id="var-auto"></span>
+          <span class="var-manual" id="var-manual"></span>
+        </div>
+        <div class="tpl-body">
+          <textarea id="tpl-ta" placeholder="Selecciona una situación para ver la plantilla..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ENLACES ═══ -->
+    <div id="sec-enl" class="sec-hidden">
+      <div class="section-label" id="lbl-enl">Rutas del campus</div>
+      <div class="enl-seg-tabs">
+        <button class="enl-seg-btn active" id="eseg-inc" onclick="switchEnlSeg('inc',this)">Incorporación</button>
+        <button class="enl-seg-btn" id="eseg-alum" onclick="switchEnlSeg('alum',this)">Alumni</button>
+      </div>
+
+      <!-- ── INCORPORACIÓN ── -->
+      <div class="enl-group active" id="enlg-inc">
+
+        <!-- Hacer la matrícula -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📋</span><span class="enl-title" data-es="Hacer la matrícula" data-ca="Fer la matrícula">Hacer la matrícula</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta">Campus / Trámites que puedes hacer / Haz la matrícula</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="Campus / Trámites que puedes hacer / Haz la matrícula / Paso 1: Comprueba tus datos" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 1: Comprueba tus datos</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites que puedes hacer / Haz la matrícula / Paso 2: Rellena el cuestionario para el tutor o tutora" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 2: Rellena el cuestionario para el tutor o tutora</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites que puedes hacer / Haz la matrícula / Paso 3: Haz la propuesta de matrícula" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 3: Haz la propuesta de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites que puedes hacer / Haz la matrícula / Paso 4: Formaliza la matrícula" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 4: Formaliza la matrícula</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-mat-inc-es" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row">
+                <button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-mat-inc-es',this)">Copiar</button>
+              </div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta">Campus / Tràmits que pots fer / Fes la matrícula</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits que pots fer / Fes la matrícula / Pas 1: Comprova les teves dades">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 1: Comprova les teves dades</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits que pots fer / Fes la matrícula / Pas 2: Omple el qüestionari per al tutor o tutora">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 2: Omple el qüestionari per al tutor o tutora</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits que pots fer / Fes la matrícula / Pas 3: Fes la proposta de matrícula">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 3: Fes la proposta de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits que pots fer / Fes la matrícula / Pas 4: Formalitza la matrícula">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 4: Formalitza la matrícula</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-mat-inc-ca" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row">
+                <button class="enl-copy-btn ct-only" onclick="copyEnlResult('rr-mat-inc-ca',this)">Copiar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan docente -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🗺️</span><span class="enl-title" data-es="Plan docente del Grado de Economía" data-ca="Pla docent del Grau d'Economia" id="et-plan-inc">Plan docente del Grado de Economía</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-plan-inc-es">Campus / Información de interés antes de hacer la matrícula / Todos los planes de estudio / Economía</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-plan-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-plan-inc-ca">Campus / Informació d'interès abans de fer la matrícula / Tots els plans d'estudi / Economia</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-plan-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Precio del crédito -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">💶</span><span class="enl-title" data-es="Precio del crédito" data-ca="Preu del crèdit">Precio del crédito</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-preu-inc-es">Campus / Información de interés antes de hacer la matrícula / Precios y tasas / Calcula el precio de tu matrícula</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-preu-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-preu-inc-ca">Campus / Informació d'interès abans de fer la matrícula / Preus i taxes / Calcula el preu de la teva matrícula</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-preu-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentación de acceso -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📄</span><span class="enl-title" data-es="Documentación de acceso" data-ca="Documentació d'accés" id="et-doc-inc">Documentación de acceso</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta">Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo estudios universitarios oficiales del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios universitarios oficiales del Estado español</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo estudios universitarios iniciados fuera del Estado español (pero sin terminar)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios universitarios iniciados fuera del Estado español (pero sin terminar)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo un ciclo formativo de grado superior (CFGS) o una formación profesional de segundo grado (FP2)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo un CFGS o una FP2</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: PAU (o EBAU)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo la PAU (o EBAU)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: mayores de 25 años" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prueba de acceso: mayores de 25 años</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: mayores de 45 años" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prueba de acceso: mayores de 45 años</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo más de 40 años y experiencia laboral en el ámbito de la titulación" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo más de 40 años y experiencia laboral en el ámbito de la titulación</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo un título universitario de fuera del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo un título universitario de fuera del Estado español</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo estudios preuniversitarios fuera del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios preuniversitarios fuera del Estado español</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-doc-inc-es" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-doc-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta">Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc estudis universitaris oficials de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis universitaris oficials de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc estudis universitaris iniciats fora de l'Estat espanyol (però sense acabar)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis universitaris iniciats fora de l'Estat espanyol (però sense acabar)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc un cicle formatiu de grau superior (CFGS) o una formació professional de segon grau (FP2)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc un CFGS o una FP2</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: PAU (o EBAU)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc la PAU (o EBAU)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: majors de 25 anys">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prova d'accés: majors de 25 anys</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: majors de 45 anys">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prova d'accés: majors de 45 anys</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc més de 40 anys i experiència laboral en l'àmbit de la titulació">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc més de 40 anys i experiència laboral en l'àmbit de la titulació</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc un títol universitari de fora de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc un títol universitari de fora de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc estudis preuniversitaris fora de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis preuniversitaris fora de l'Estat espanyol</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-doc-inc-ca" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnlResult('rr-doc-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Traslado de expediente -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📁</span><span class="enl-title" data-es="Traslado de expediente" data-ca="Trasllat d'expedient" id="et-tras-inc">Traslado de expediente</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-tras-inc-es">Campus / Trámites que puedes hacer / Traslado de expediente a la UOC</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-tras-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-tras-inc-ca">Campus / Tràmits que pots fer / Trasllat d'expedient a la UOC</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-tras-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descuentos y becas -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🎫</span><span class="enl-title" data-es="Descuentos y becas" data-ca="Descomptes i beques" id="et-desc-inc">Descuentos y becas</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-desc-base-inc-es">Campus / Información de interés antes de hacer la matrícula / Descuentos y becas</div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-desc-base-inc-ca">Campus / Informació d'interès abans de fer la matrícula / Descomptes i beques</div>
+            </div>
+            <div class="enl-checklist">
+              <div class="enl-checklist-label" id="ecl-label-inc">Verificar con el estudiante</div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Beca del Ministerio de Educación" onchange="updateDescRuta('inc')"><span>Beca del Ministerio de Educación</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Beca Equidad" onchange="updateDescRuta('inc')"><span>Beca Equidad</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Ayuda AGAUR para estudiar idiomas" onchange="updateDescRuta(\'inc\')"><span>Ayuda AGAUR para estudiar idiomas</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Becas de movilidad (Erasmus)" onchange="updateDescRuta(\'inc\')"><span>Becas de movilidad (Erasmus)</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Becas para estudiantes de fuera del estado español" onchange="updateDescRuta(\'inc\')"><span>Becas para estudiantes de fuera del estado español</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Alumni" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/alumni/index.html" target="_blank">Alumni</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Descuentos para familias monoparentales" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/es/tramits/descomptes/familia-monoparental" target="_blank">Descuentos para familias monoparentales</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Miembro de familia numerosa" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/familia_nombrosa/index.html" target="_blank">Miembro de familia numerosa</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Persona con discapacidad o víctima de acto terrorista" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/discapacitats_terrorisme_genere/index.html" target="_blank">Persona con discapacidad o víctima de un acto terrorista</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Víctimas de violencia machista en el ámbito de la pareja" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/webapps/campus/estudiant/estudiant/tramits/es/descomptes/violencia_masclista/index.html" target="_blank">Víctimas de violencia machista en el ámbito de la pareja</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Víctimas de violencia machista fuera del ámbito de la pareja" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/webapps/campus/estudiant/estudiant/tramits/es/descomptes/violencia_masclista_fora_parella/index.html" target="_blank">Víctimas de violencia machista fuera del ámbito de la pareja</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Ayudas para personas residentes en zonas rurales" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/beques/rurals/index.html" target="_blank">Ayudas para personas residentes en zonas rurales</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Beneficiarios de la prestación del ingreso mínimo vital" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/ingres_minim_vital/index.html" target="_blank">Beneficiarios del ingreso mínimo vital</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Matrícula de honor" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/matricula_honor/index.html" target="_blank">Matrícula de honor</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Comunidad UOC" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/comunitat_uoc/index.html" target="_blank">Comunidad UOC</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Convenio de empresa e instituciones" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/conveni_empreses/index.html" target="_blank">Convenio de empresa e instituciones</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-inc" class="desc-chk" data-label="Ventajas económicas de la ampliación de matrícula" onchange="updateDescRuta(\'inc\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/ampliacio_matricula/index.html" target="_blank">Ventajas económicas de la ampliación de matrícula</a></div>
+            </div>
+            <div class="enl-ruta-result" id="rr-desc-inc" style="margin-top:6px;display:none"></div>
+            <div class="enl-copy-row" id="rr-desc-inc-copy" style="display:none">
+              <button class="enl-copy-btn" onclick="copyEnlResult('rr-desc-inc',this)">Copiar ruta</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EEP / AEP -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📜</span><span class="enl-title" data-es="Documentación EEP" data-ca="Documentació AEP" id="et-eep-inc">Documentación EEP</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-eep-inc-es">Campus / Trámites que puedes hacer / Evaluación de Estudios Previos (EEP)</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-eep-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-eep-inc-ca">Campus / Tràmits que pots fer / Avaluació d'Estudis Previs (AEP)</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-eep-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RAEP -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">💼</span><span class="enl-title" data-es="Documentación RAEP" data-ca="Documentació RAEP" id="et-raep-inc">Documentación RAEP</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-raep-inc-es">Campus / Trámites que puedes hacer / Reconocimiento Académico de la Experiencia Profesional (RAEP) / Paso 1 Consulta las tablas de reconocimiento / Las tablas / Economía y empresa / Grado de economía / Tabla de reconocimientos</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-raep-inc-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-raep-inc-ca">Campus / Tràmits que pots fer / Reconeixement de l'experiència professional (RAEP) / Pas 1 Consulta les taules de reconeixement / Les taules / Economia i empresa / Grau d'economia / Taula de reconeixements</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-raep-inc-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /enlg-inc -->
+
+      <!-- ── ALUMNI ── -->
+      <div class="enl-group" id="enlg-alum">
+
+        <!-- Hacer la matrícula Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📋</span><span class="enl-title" data-es="Hacer la matrícula" data-ca="Fer la matrícula">Hacer la matrícula</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta">Campus / Trámites / Matrícula / Matrícula de grado y másteres universitarios</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Matrícula / Matrícula de grado y másteres universitarios / Paso 1: Haz la propuesta de matrícula" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 1: Haz la propuesta de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Matrícula / Matrícula de grado y másteres universitarios / Paso 2: Formaliza la matrícula" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Paso 2: Formaliza la matrícula</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-mat-alum-es" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-mat-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta">Campus / Tràmits / Matrícula / Matrícula de grau i màsters universitaris</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Matrícula / Matrícula de grau i màsters universitaris / Pas 1: Fes la proposta de matrícula">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 1: Fes la proposta de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Matrícula / Matrícula de grau i màsters universitaris / Pas 2: Formalitza la matrícula">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Pas 2: Formalitza la matrícula</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-mat-alum-ca" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnlResult('rr-mat-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan docente Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🗺️</span><span class="enl-title" data-es="Plan docente del Grado de Economía" data-ca="Pla docent del Grau d'Economia" id="et-plan-alum">Plan docente del Grado de Economía</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-plan-alum-es">Campus / Más UOC / Planes de estudio / Economía</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-plan-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-plan-alum-ca">Campus / Més UOC / Plans d'estudi / Economia</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-plan-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentación de acceso Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📄</span><span class="enl-title" data-es="Documentación de acceso" data-ca="Documentació d'accés" id="et-doc-alum">Documentación de acceso</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta">Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo estudios universitarios oficiales del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios universitarios oficiales del Estado español</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo estudios universitarios iniciados fuera del Estado español (pero sin terminar)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios universitarios iniciados fuera del Estado español (pero sin terminar)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo un ciclo formativo de grado superior (CFGS) o una formación profesional de segundo grado (FP2)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo un CFGS o una FP2</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: PAU (o EBAU)" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo la PAU (o EBAU)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: mayores de 25 años" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prueba de acceso: mayores de 25 años</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo la prueba de acceso a la universidad: mayores de 45 años" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prueba de acceso: mayores de 45 años</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo más de 40 años y experiencia laboral en el ámbito de la titulación" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo más de 40 años y experiencia laboral en el ámbito de la titulación</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo un título universitario de fuera del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo un título universitario de fuera del Estado español</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo estudios preuniversitarios fuera del Estado español" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios preuniversitarios fuera del Estado español</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-doc-alum-es" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-doc-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta">Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc estudis universitaris oficials de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis universitaris oficials de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc estudis universitaris iniciats fora de l'Estat espanyol (però sense acabar)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis universitaris iniciats fora de l'Estat espanyol (però sense acabar)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc un cicle formatiu de grau superior (CFGS) o una formació professional de segon grau (FP2)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc un CFGS o una FP2</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: PAU (o EBAU)">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc la PAU (o EBAU)</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: majors de 25 anys">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prova d'accés: majors de 25 anys</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc la prova d'accés a la universitat: majors de 45 anys">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Prova d'accés: majors de 45 anys</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc més de 40 anys i experiència laboral en l'àmbit de la titulació">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc més de 40 anys i experiència laboral en l'àmbit de la titulació</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc un títol universitari de fora de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc un títol universitari de fora de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc estudis preuniversitaris fora de l'Estat espanyol">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis preuniversitaris fora de l'Estat espanyol</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-doc-alum-ca" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnlResult('rr-doc-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Traslado de expediente Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📁</span><span class="enl-title" data-es="Traslado de expediente" data-ca="Trasllat d'expedient" id="et-tras-alum">Traslado de expediente</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-tras-alum-es">Campus / Trámites / Otros trámites / Traslado de expediente</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-tras-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-tras-alum-ca">Campus / Tràmits / Altres tràmits / Trasllat d'expedient</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-tras-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Anulación de matrícula Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🚫</span><span class="enl-title" data-es="Anulación de matrícula" data-ca="Anul·lació de matrícula" id="et-anul-alum">Anulación de matrícula</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta">Campus / Trámites / Matrícula / Anulación de matrícula de grado o máster universitario</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Matrícula / Anulación de matrícula de grado o máster universitario / Desistimiento de matrícula" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Desistimiento de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Matrícula / Anulación de matrícula de grado o máster universitario / Anulación de matrícula con motivos justificados" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Anulación de matrícula con motivos justificados</span>
+                </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Matrícula / Anulación de matrícula de grado o máster universitario / Anulación de matrícula sin motivos justificados" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Anulación de matrícula sin motivos justificados</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-anul-alum-es" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-anul-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta">Campus / Tràmits / Matrícula / Anul·lació de matrícula de grau o màster universitari</div>
+              <div class="enl-suboptions">
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Matrícula / Anul·lació de matrícula de grau o màster universitari / Desistiment de matrícula">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Desistiment de matrícula</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Matrícula / Anul·lació de matrícula de grau o màster universitari / Anul·lació de matrícula amb motius justificats">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Anul·lació de matrícula amb motius justificats</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Matrícula / Anul·lació de matrícula de grau o màster universitari / Anul·lació de matrícula sense motius justificats">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Anul·lació de matrícula sense motius justificats</span>
+                </div>
+              </div>
+              <div class="enl-ruta-result" id="rr-anul-alum-ca" style="margin-top:5px;display:none"></div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnlResult('rr-anul-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modificación de matrícula Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">✏️</span><span class="enl-title" data-es="Modificación de matrícula" data-ca="Modificació de matrícula">Modificación de matrícula</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-modmat-alum-es">Campus / Trámites / Matrícula / Modificación de matrícula de grado o máster universitario</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-modmat-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-modmat-alum-ca">Campus / Tràmits / Matrícula / Modificació de matrícula de grau o màster universitari</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-modmat-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descuentos y becas Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🎫</span><span class="enl-title" data-es="Descuentos y becas" data-ca="Descomptes i beques" id="et-desc-alum">Descuentos y becas</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-desc-base-alum-es">Campus / Trámites / Descuentos / Familia numerosa</div>
+            </div>
+            <div class="enl-checklist">
+              <div class="enl-checklist-label" id="ecl-label-alum">Verificar con el estudiante</div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Beca del Ministerio de Educación" onchange="updateDescRuta(\'alum\')"><span>Beca del Ministerio de Educación</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Beca Equidad" onchange="updateDescRuta(\'alum\')"><span>Beca Equidad</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Ayuda AGAUR para estudiar idiomas" onchange="updateDescRuta(\'alum\')"><span>Ayuda AGAUR para estudiar idiomas</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Becas de movilidad (Erasmus)" onchange="updateDescRuta(\'alum\')"><span>Becas de movilidad (Erasmus)</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Becas para estudiantes de fuera del estado español" onchange="updateDescRuta(\'alum\')"><span>Becas para estudiantes de fuera del estado español</span></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Alumni" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/alumni/index.html" target="_blank">Alumni</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Descuentos para familias monoparentales" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/es/tramits/descomptes/familia-monoparental" target="_blank">Descuentos para familias monoparentales</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Miembro de familia numerosa" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/familia_nombrosa/index.html" target="_blank">Miembro de familia numerosa</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Persona con discapacidad o víctima de acto terrorista" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/discapacitats_terrorisme_genere/index.html" target="_blank">Persona con discapacidad o víctima de un acto terrorista</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Víctimas de violencia machista en el ámbito de la pareja" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/webapps/campus/estudiant/estudiant/tramits/es/descomptes/violencia_masclista/index.html" target="_blank">Víctimas de violencia machista en el ámbito de la pareja</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Víctimas de violencia machista fuera del ámbito de la pareja" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/webapps/campus/estudiant/estudiant/tramits/es/descomptes/violencia_masclista_fora_parella/index.html" target="_blank">Víctimas de violencia machista fuera del ámbito de la pareja</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Ayudas para personas residentes en zonas rurales" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/beques/rurals/index.html" target="_blank">Ayudas para personas residentes en zonas rurales</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Beneficiarios de la prestación del ingreso mínimo vital" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/ingres_minim_vital/index.html" target="_blank">Beneficiarios del ingreso mínimo vital</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Matrícula de honor" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/matricula_honor/index.html" target="_blank">Matrícula de honor</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Comunidad UOC" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/comunitat_uoc/index.html" target="_blank">Comunidad UOC</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Convenio de empresa e instituciones" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/conveni_empreses/index.html" target="_blank">Convenio de empresa e instituciones</a></div>
+              <div class="enl-check-item"><input type="radio" name="desc-alum" class="desc-chk" data-label="Ventajas económicas de la ampliación de matrícula" onchange="updateDescRuta(\'alum\')"><a href="https://campus.uoc.edu/estudiant/tramits/es/descomptes/ampliacio_matricula/index.html" target="_blank">Ventajas económicas de la ampliación de matrícula</a></div>
+            </div>
+            <div class="enl-ruta-result" id="rr-desc-alum" style="margin-top:6px;display:none"></div>
+            <div class="enl-copy-row" id="rr-desc-alum-copy" style="display:none">
+              <button class="enl-copy-btn" onclick="copyEnlResult('rr-desc-alum',this)">Copiar ruta</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EEP / AEP Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📜</span><span class="enl-title" data-es="Documentación EEP" data-ca="Documentació AEP" id="et-eep-alum">Documentación EEP</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-eep-alum-es">Campus / Trámites / Reconocimientos y convalidaciones / Evaluación de Estudios Previos (EEP)</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-eep-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-eep-alum-ca">Campus / Tràmits / Reconeixements i convalidacions / Avaluació d'Estudis Previs (AEP)</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-eep-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RAEP Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">💼</span><span class="enl-title" data-es="Documentación RAEP" data-ca="Documentació RAEP" id="et-raep-alum">Documentación RAEP</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-raep-alum-es">Campus / Trámites / Reconocimientos y convalidaciones / Reconocimiento Académico de la experiencia profesional (RAEP) / Paso 1 Consulta las tablas de reconocimiento / Las tablas / Economía y empresa / Grado de economía / Tabla de reconocimientos</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-raep-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-raep-alum-ca">Campus / Tràmits / Reconeixements i convalidacions / Reconeixement de l'experiència professional (RAEP) / Pas 1 Consulta les taules de reconeixement / Les taules / Economia i empresa / Grau d'economia i aquí, veuràs l'exemple d'autoinforme que has de servir de guia per omplir-lo</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-raep-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equivalencias inglés Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🎓</span><span class="enl-title" data-es="Equivalencias de inglés" data-ca="Equivalències d'anglès">Equivalencias de inglés</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-eng-alum-es">Campus / Trámites / Reconocimientos y convalidaciones / Evaluación de estudios previos (EEP) / Paso 1 Consulta las tablas de equivalencia / Consulta qué estudios y actividades se pueden convalidar / Cursos de idiomas / Inglés</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-eng-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-eng-alum-ca">Campus / Tràmits / Reconeixements i convalidacions / Avaluació d'estudis previs (AEP) / Pas 1 Consulta les taules d'equivalències / Consulta quins estudis i activitats es poden convalidar / Cursos d'idiomes / Anglès</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-eng-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Justificación de exámenes Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📝</span><span class="enl-title" data-es="Justificación de exámenes" data-ca="Justificació d'exàmens">Justificación de exámenes</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-just-alum-es">Campus / Trámites / Evaluación y pruebas finales / Justificante de las pruebas virtuales</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-just-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-just-alum-ca">Campus / Tràmits / Avaluació i proves finals / Justificant de les proves virtuals</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-just-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cambio de fecha de exámenes Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">📅</span><span class="enl-title" data-es="Cambio de fecha de exámenes" data-ca="Canvi de data d'exàmens">Cambio de fecha de exámenes</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-canvidata-alum-es">Campus / Trámites / Evaluación y pruebas finales / Cambios de los horarios de las pruebas: solapamientos y motivos justificados</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-canvidata-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-canvidata-alum-ca">Campus / Tràmits / Avaluació i proves finals / Canvis dels horaris de les proves: solapaments i motius justificats</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-canvidata-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alegaciones Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">⚖️</span><span class="enl-title" data-es="Alegaciones de notas" data-ca="Al·legacions de notes">Alegaciones de notas</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-aleg-alum-es">Campus / Trámites / Evaluación y pruebas finales / Revisión y alegación de notas</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-aleg-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-aleg-alum-ca">Campus / Tràmits / Avaluació i proves finals / Revisió i al·legacions de notes</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-aleg-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cambio de idioma Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🌐</span><span class="enl-title" data-es="Cambio de idioma de las aulas" data-ca="Canvi d'idioma de les aules">Cambio de idioma de las aulas</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-idioma-alum-es">Campus / Trámites / Otros trámites / Cambio de idioma de las aulas multilingües en Canvas</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-idioma-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-idioma-alum-ca">Campus / Tràmits / Altres tràmits / Canvi d'idioma de les aules multilingües a Canvas</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-idioma-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendario académico Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🗓️</span><span class="enl-title" data-es="Calendario académico" data-ca="Calendari acadèmic">Calendario académico</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-cal-alum-es">Campus / Trámites / Calendario académico</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-cal-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-cal-alum-ca">Campus / Tràmits / Calendari acadèmic</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-cal-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certificado de notas Alumni -->
+        <div class="enl-item">
+          <div class="enl-item-header" onclick="toggleEnl(this)">
+            <div class="enl-item-left"><span class="enl-icon">🏅</span><span class="enl-title" data-es="Certificado de notas" data-ca="Certificat de notes">Certificado de notas</span></div>
+            <span class="enl-chevron">▾</span>
+          </div>
+          <div class="enl-body">
+            <div class="ruta-es">
+              <div class="enl-ruta" id="er-cert-alum-es">Campus / Espacio personal / Recursos para estudiantes / Mis certificados / Nueva solicitud / Certificado Académico Personal</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnl('er-cert-alum-es',this)">Copiar</button></div>
+            </div>
+            <div class="ruta-ca">
+              <div class="enl-ruta" id="er-cert-alum-ca">Campus / Espai personal / Recursos per a estudiants / Els meus certificats / Nova sol·licitud / Certificat Acadèmic Personal</div>
+              <div class="enl-copy-row"><button class="enl-copy-btn ct-only" onclick="copyEnl('er-cert-alum-ca',this)">Copiar</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /enlg-alum -->
+    </div>
+
+    <!-- ═══ INFORME ═══ -->
+    <div id="sec-inf" class="sec-hidden">
+      <div class="section-label" id="lbl-inf-datos">Informe Final Tutoría (BF–BM)</div>
+
+      <!-- Valores leídos del Sheets -->
+      <div class="inf-grid" id="inf-values-grid">
+        <div class="inf-field"><div class="inf-field-label">BF · Motivaciones y Objetivos</div><div class="inf-value" id="inf-bf">—</div></div>
+        <div class="inf-field"><div class="inf-field-label">BG · Seguiment docència</div><div class="inf-value" id="inf-bg">—</div></div>
+        <div class="inf-field"><div class="inf-field-label">BH · Càrrega lectiva</div><div class="inf-value" id="inf-bh">—</div></div>
+        <div class="inf-field"><div class="inf-field-label">BI · AEP / RAEP</div><div class="inf-value" id="inf-bi">—</div></div>
+        <div class="inf-field"><div class="inf-field-label">BJ · Comunicació tutor</div><div class="inf-value" id="inf-bj">—</div></div>
+        <div class="inf-field"><div class="inf-field-label">BK · Necesita seguimiento</div><div class="inf-value" id="inf-bk">—</div></div>
+        <div class="inf-field inf-field-wide"><div class="inf-field-label">BL · Altres casuístiques</div><div class="inf-value" id="inf-bl">—</div></div>
+        <div class="inf-field inf-field-wide"><div class="inf-field-label">BM · Otros</div><div class="inf-value" id="inf-bm">—</div></div>
+      </div>
+
+      <div id="inf-no-data" style="font-size:12px;color:#8b95a1;padding:10px 0;display:none">
+        Carga un alumno para ver el informe.
+      </div>
+
+      <!-- Informe generado -->
+      <div class="tpl-area" id="inf-tpl-wrap" style="display:none">
+        <div class="tpl-header">
+          <div class="tpl-title" id="inf-tpl-title">Informe de seguimiento</div>
+          <button class="copy-btn" id="icopy-btn" onclick="doCopy('inf-ta','icopy-btn','icopy-lbl')">⎘ <span id="icopy-lbl">Copiar</span></button>
+        </div>
+        <div class="tpl-body"><textarea id="inf-ta" style="min-height:160px" readonly></textarea></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /dash -->
+
+<script>
+// ═══════════════════════════════════════════
+// DATOS
+// ═══════════════════════════════════════════
+
+const CFGS = [
+  "Administración de Sistemas Informáticos en Red",
+  "Administración y Finanzas",
+  "Animación 3D, juegos y entornos interactivos",
+  "Animación Sociocultural y Turística",
+  "Asistencia a la Dirección",
+  "Comercio Internacional",
+  "Desarrollo de Aplicaciones Multiplataforma",
+  "Desarrollo de Aplicaciones WEB",
+  "Enseñanza y animación sociodeportiva",
+  "Gestión de Alojamientos Turísticos",
+  "Márketing y publicidad",
+  "Producción de audiovisuales y espectáculos",
+  "Transporte marítimo y pesca de altura",
+  "Transporte y Logística"
+];
+
+// Nombres oficiales en catalán de cada CFGS (mismo orden que CFGS)
+const CFGS_CA = [
+  "Administració de Sistemes Informàtics en Xarxa",
+  "Administració i Finances",
+  "Animació 3D, Jocs i Entorns Interactius",
+  "Animació Sociocultural i Turística",
+  "Assistència a la Direcció",
+  "Comerç Internacional",
+  "Desenvolupament d'Aplicacions Multiplataforma",
+  "Desenvolupament d'Aplicacions Web",
+  "Ensenyament i Animació Socioeducativa",
+  "Gestió d'Allotjaments Turístics",
+  "Màrqueting i Publicitat",
+  "Producció d'Audiovisuals i Espectacles",
+  "Transport Marítim i Pesca d'Altura",
+  "Transport i Logística"
+];
+
+// Asignaturas convalidables por CFGS
+// Nombres exactos tal como aparecen en ASIGNATURAS (campo n)
+const CFGS_CONV = {
+  "Administración de Sistemas Informáticos en Red": [
+    "Competencias digitales"
+  ],
+  "Administración y Finanzas": [
+    "Inglés B2.1",
+    "Introducción a la empresa",
+    "Introducción a la información financiera de la empresa"
+  ],
+  "Animación 3D, juegos y entornos interactivos": [
+    "Competencias digitales"
+  ],
+  "Animación Sociocultural y Turística": [
+    "Introducción a la empresa",
+    "Inglés B2.1"
+  ],
+  "Asistencia a la Dirección": [
+    "Inglés B2.1",
+    "Competencias digitales",
+    "Introducción a la información financiera de la empresa"
+  ],
+  "Comercio Internacional": [
+    "Inglés B2.1",
+    "Introducción a la información financiera de la empresa"
+  ],
+  "Desarrollo de Aplicaciones Multiplataforma": [
+    "Competencias digitales",
+    "Introducción a la información financiera de la empresa"
+  ],
+  "Desarrollo de Aplicaciones WEB": [
+    "Competencias digitales",
+    "Introducción a la empresa"
+  ],
+  "Enseñanza y animación sociodeportiva": [
+    "Introducción a la empresa"
+  ],
+  "Gestión de Alojamientos Turísticos": [
+    "Competencias digitales",
+    "Inglés B2.1"
+  ],
+  "Márketing y publicidad": [
+    "Competencias digitales",
+    "Introducción a la información financiera de la empresa",
+    "Inglés B2.1"
+  ],
+  "Producción de audiovisuales y espectáculos": [
+    "Introducción a la empresa"
+  ],
+  "Transporte marítimo y pesca de altura": [
+    "Inglés B2.1"
+  ],
+  "Transporte y Logística": [
+    "Inglés B2.1",
+    "Introducción a la información financiera de la empresa"
+  ]
+};
+
+const ASIGNATURAS = [
+  {n:'Introducción a la macroeconomía',nc:'Introducció a la macroeconomia',t:'bas',sem:'tots',req:{es:'Imprescindible: Intro. a la microeconomía',ca:'Imprescindible: Intro. a la microeconomia'}},
+  {n:'Introducción a la microeconomía',nc:'Introducció a la microeconomia',t:'bas',sem:'tots',req:{es:'Recomendable: Iniciación a las matemáticas',ca:'Recomanable: Iniciació a les matemàtiques'}},
+  {n:'Fundamentos de matemáticas',nc:'Fonaments de matemàtiques',t:'bas',sem:'tots',req:{es:'Recomendable: Iniciación a las matemáticas',ca:'Recomanable: Iniciació a les matemàtiques'}},
+  {n:'Fundamentos de estadística',nc:"Fonaments d'estadística",t:'bas',sem:'tots',req:{es:'Fundamentos de matemáticas',ca:'Fonaments de matemàtiques'}},
+  {n:'Sociología',nc:'Sociologia',t:'bas',sem:'tots',req:null},
+  {n:'Historia económica',nc:'Història econòmica',t:'bas',sem:'sep',req:null},
+  {n:'Introducción a la empresa',nc:"Introducció a l'empresa",t:'bas',sem:'tots',req:null},
+  {n:'Política y Sociedad',nc:'Política i Societat',t:'bas',sem:'tots',req:null},
+  {n:'Competencias digitales',nc:'Competències digitals',t:'bas',sem:'tots',req:null},
+  {n:'Inglés B2.1',nc:'Anglès B2.1',t:'bas',sem:'tots',req:{es:'Competencias digitales',ca:'Competències digitals'}},
+  {n:'Introducción a la información financiera de la empresa',nc:"Introducció a la informació financera de l'empresa",t:'obl',sem:'tots',req:{es:'Intro. a la empresa',ca:"Intro. a l'empresa"}},
+  {n:'Macroeconomía',nc:'Macroeconomia',t:'obl',sem:'feb',req:{es:'Intro. a la macroeconomía',ca:'Intro. a la macroeconomia'}},
+  {n:'Microeconomía',nc:'Microeconomia',t:'obl',sem:'sep',req:{es:'Intro. a la microeconomía',ca:'Intro. a la microeconomia'}},
+  {n:'Economía del trabajo I',nc:'Economia del treball I',t:'obl',sem:'sep',req:{es:'Intro. macro e Intro. micro',ca:'Intro. macro i Intro. micro'}},
+  {n:'Inferencia estadística',nc:'Inferència estadística',t:'obl',sem:'tots',req:{es:'Fundamentos de estadística',ca:"Fonaments d'estadística"}},
+  {n:'Introducción a la econometría',nc:"Introducció a l'econometria",t:'obl',sem:'sep',req:{es:'Fund. estad. e Inferencia estad.',ca:"Fonaments estad. i Inferència estad."}},
+  {n:'Econometría',nc:'Econometria',t:'obl',sem:'feb',req:{es:"Intro. a la econometría",ca:"Intro. a l'econometria"}},
+  {n:'Optimización',nc:'Optimització',t:'obl',sem:'feb',req:{es:'Fundamentos de matemáticas',ca:'Fonaments de matemàtiques'}},
+  {n:'Políticas económicas estructurales',nc:'Polítiques econòmiques estructurals',t:'obl',sem:'feb',req:{es:'Intro. a la microeconomía',ca:'Intro. a la microeconomia'}},
+  {n:'Política económica coyuntural',nc:'Política econòmica conjuntural',t:'obl',sem:'sep',req:{es:'Intro. a la macroeconomía',ca:'Intro. a la macroeconomia'}},
+  {n:'Evaluación de políticas públicas',nc:'Avaluació de polítiques públiques',t:'obl',sem:'feb',req:{es:'Economía del sector público',ca:'Economia del sector públic'}},
+  {n:'Economía del sector público',nc:'Economia del sector públic',t:'obl',sem:'tots',req:{es:'Macroeconomía',ca:'Macroeconomia'}},
+  {n:'Sistema fiscal',nc:'Sistema fiscal',t:'obl',sem:'tots',req:{es:'Economía del sector público',ca:'Economia del sector públic'}},
+  {n:'Derecho tributario',nc:'Dret tributari',t:'obl',sem:'sep',req:null},
+  {n:'Teoría económica y sociedad',nc:'Teoria econòmica i societat',t:'obl',sem:'sep',req:{es:'Intro. macro, Sociología, Política y Sociedad',ca:'Intro. macro, Sociologia, Política i Societat'}},
+  {n:'Economía internacional: comercio',nc:'Economia internacional: comerç',t:'obl',sem:'sep',req:{es:'Intro. a la macroeconomía',ca:'Intro. a la macroeconomia'}},
+  {n:'Economía internacional: finanzas',nc:'Economia internacional: finances',t:'obl',sem:'feb',req:{es:'Intro. a la macroeconomía',ca:'Intro. a la macroeconomia'}},
+  {n:'Estructura económica española',nc:'Estructura econòmica espanyola',t:'obl',sem:'feb',req:{es:'Intro. micro, Intro. macro, Estruc. econ. mundial',ca:'Intro. micro, Intro. macro, Estruc. econ. mundial'}},
+  {n:'Estructura económica mundial',nc:'Estructura econòmica mundial',t:'obl',sem:'sep',req:{es:'Intro. micro, Intro. macro, Estruc. econ. española',ca:'Intro. micro, Intro. macro, Estruc. econ. espanyola'}},
+  {n:'Historia del pensamiento económico',nc:'Història del pensament econòmic',t:'obl',sem:'feb',req:null},
+  {n:'Estructura económica',nc:'Estructura econòmica',t:'obl',sem:'tots',req:{es:'Intro. micro, Intro. macro',ca:'Intro. micro, Intro. macro'}},
+  {n:'Inglés B2.2',nc:'Anglès B2.2',t:'obl',sem:'tots',req:{es:'Inglés B2.1',ca:'Anglès B2.1'}},
+  {n:'Geografía económica',nc:'Geografia econòmica',t:'obl',sem:'sep',req:{es:'Microeconomía, Desarrollo económico',ca:'Microeconomia, Desenvolupament econòmic'}},
+  {n:'Trabajo final de grado',nc:'Treball final de grau',t:'obl',sem:'tots',req:{es:'Superar básicas y obligatorias',ca:'Superar bàsiques i obligatòries'}},
+  {n:'Introducción al Business Intelligence y Big Data',nc:"Introducció al Business Intelligence i Big Data",t:'opt',sem:'sep',req:null},
+  {n:'Ética, diversidad y gestión responsable',nc:'Ètica, diversitat i gestió responsable',t:'opt',sem:'tots',req:null},
+  {n:'Sostenibilidad y transición ecológica',nc:'Sostenibilitat i transició ecològica',t:'opt',sem:'tots',req:null},
+  {n:'Digital Transformation',nc:'Digital Transformation',t:'opt',sem:'feb',req:{es:'Nivel B2 Inglés',ca:'Nivell B2 Anglès'}},
+  {n:'Green Finance',nc:'Green Finance',t:'opt',sem:'feb',req:{es:'Nivel B2 Inglés',ca:'Nivell B2 Anglès'}},
+  {n:'Alternativas económicas',nc:'Alternatives econòmiques',t:'opt',sem:'tots',req:null},
+  {n:'Economía ecológica',nc:'Economia ecològica',t:'opt',sem:'feb',req:{es:'Intro. micro e Intro. macro',ca:'Intro. micro i Intro. macro'}},
+  {n:'Economía y retos ambientales contemporáneos',nc:'Economia i reptes ambientals contemporanis',t:'opt',sem:'feb',req:null},
+  {n:'Economía de la transformación digital',nc:"Economia de la transformació digital",t:'opt',sem:'sep',req:null},
+  {n:'Análisis de series temporales',nc:'Anàlisi de sèries temporals',t:'opt',sem:'sep',req:{es:'Fund. estad., Inferencia, Intro. econometría, Econometría',ca:"Fonaments est., Inferència, Intro. econometria, Econometria"}},
+  {n:'Desarrollo económico',nc:'Desenvolupament econòmic',t:'opt',sem:'feb',req:{es:'Macro, Políticas estruc., Econ. inter. comercio',ca:'Macro, Polítiques estruc., Econ. inter. comerç'}},
+  {n:'Desigualdad y justicia social',nc:'Desigualtat i justícia social',t:'opt',sem:'sep',req:{es:'Macro, Políticas estruc., Econ. inter. comercio',ca:'Macro, Polítiques estruc., Econ. inter. comerç'}},
+  {n:'Dirección estratégica',nc:'Direcció estratègica',t:'opt',sem:'tots',req:{es:'Intro. a la empresa',ca:"Intro. a l'empresa"}},
+  {n:'Economía de la educación',nc:"Economia de l'educació",t:'opt',sem:'feb',req:{es:'Economía del trabajo I',ca:'Economia del treball I'}},
+  {n:'Economía de la innovación',nc:"Economia de la innovació",t:'opt',sem:'sep',req:{es:'Intro. a la microeconomía',ca:'Intro. a la microeconomia'}},
+  {n:'Economía del trabajo II',nc:'Economia del treball II',t:'opt',sem:'feb',req:{es:'Economía del trabajo I',ca:'Economia del treball I'}},
+  {n:'Economía industrial',nc:'Economia industrial',t:'opt',sem:'feb',req:{es:'Microeconomía',ca:'Microeconomia'}},
+  {n:'El mercado de trabajo europeo',nc:'El mercat de treball europeu',t:'opt',sem:'feb',req:{es:'Economía del trabajo II',ca:'Economia del treball II'}},
+  {n:'Fiscalidad avanzada',nc:'Fiscalitat avançada',t:'opt',sem:'feb',req:{es:'Fiscalidad empresarial y Econ. sector público',ca:'Fiscalitat empresarial i Econ. sector públic'}},
+  {n:'Fiscalidad internacional',nc:'Fiscalitat internacional',t:'opt',sem:'sep',req:{es:'Sistema fiscal',ca:'Sistema fiscal'}},
+  {n:'Iniciación a las matemáticas',nc:'Iniciació a les matemàtiques',t:'opt',sem:'tots',req:null},
+  {n:'International Management',nc:'International Management',t:'opt',sem:'feb',req:{es:'Intro. empresa, Dirección estratégica, Inglés',ca:"Intro. empresa, Direcció estratègica, Anglès"}},
+  {n:'Advanced Macroeconomics',nc:'Advanced Macroeconomics',t:'opt',sem:'sep',req:{es:'Macroeconomía y Nivel B2 Inglés',ca:'Macroeconomia i Nivell B2 Anglès'}},
+  {n:'Microeconomía avanzada',nc:'Microeconomia avançada',t:'opt',sem:'feb',req:{es:'Microeconomía',ca:'Microeconomia'}},
+  {n:'Nuevos factores de competitividad',nc:'Nous factors de competitivitat',t:'opt',sem:'sep',req:{es:'Intro. a la microeconomía',ca:'Intro. a la microeconomia'}},
+  {n:'Políticas de ocupación',nc:"Polítiques d'ocupació",t:'opt',sem:'sep',req:{es:'Economía del trabajo I',ca:'Economia del treball I'}},
+  {n:'Temas actuales de política económica',nc:'Temes actuals de política econòmica',t:'opt',sem:'sep',req:{es:'Políticas estruc. y Política coyuntural',ca:'Polítiques estruc. i Política conjuntural'}},
+  {n:'Temas actuales del mercado de trabajo',nc:'Temes actuals del mercat de treball',t:'opt',sem:'feb',req:{es:'Intro. micro, Intro. macro, Econ. trabajo I',ca:'Intro. micro, Intro. macro, Econ. treball I'}},
+  {n:'Teoría de juegos',nc:'Teoria de jocs',t:'opt',sem:'feb',req:{es:'Optimización',ca:'Optimització'}},
+  {n:'Trabajo y sociedad del conocimiento',nc:'Treball i societat del coneixement',t:'opt',sem:'sep',req:{es:'Intro. macro, Intro. micro, Econ. trabajo I',ca:'Intro. macro, Intro. micro, Econ. treball I'}},
+  {n:'Prácticas I',nc:'Pràctiques I',t:'opt',sem:'tots',req:{es:'Más de 120 créditos superados',ca:'Més de 120 crèdits superats'}},
+  {n:'Prácticas II',nc:'Pràctiques II',t:'opt',sem:'tots',req:{es:'Más de 120 créditos superados',ca:'Més de 120 crèdits superats'}},
+];
+
+const COLS = {
+  es: {
+    personal:[{k:'IDP',id:'d'},{k:'Nombre',id:'e'},{k:'Primer apellido',id:'f'},{k:'Segundo apellido',id:'g'},{k:'Email UOC',id:'h'},{k:'Email personal',id:'i'}],
+    info:[{k:'Estudios procedencia acabados',id:'o'},{k:'Estudios univ. inacabados',id:'p'},{k:'Título B2',id:'q'},{k:'Horas trabajo',id:'r'},{k:'Horas estudio',id:'s'},{k:'EEP estado',id:'t'},{k:'Traslado expediente',id:'u'},{k:'Aportaciones',id:'v'},{k:'Observaciones',id:'w'}]
+  },
+  ca: {
+    personal:[{k:'IDP',id:'d'},{k:'Nom',id:'e'},{k:'Primer cognom',id:'f'},{k:'Segon cognom',id:'g'},{k:'Correu UOC',id:'h'},{k:'Correu personal',id:'i'}],
+    info:[{k:'Estudis procedència acabats',id:'o'},{k:'Estudis univ. inacabats',id:'p'},{k:'Títol B2',id:'q'},{k:'Hores treball',id:'r'},{k:'Hores estudi',id:'s'},{k:'AEP estat',id:'t'},{k:"Trasllat d'expedient",id:'u'},{k:'Aportacions',id:'v'},{k:'Observacions',id:'w'}]
+  }
+};
+
+const SITS = {
+  es: {
+    1:[
+      {id:'no-rec-prev', icon:'✕', tone:'bad',  l:'Propuesta no recomendada', s:'Requisitos previos',      asig:true,  conv:true},
+      {id:'no-rec-micro',icon:'✕', tone:'bad',  l:'Propuesta no recomendada', s:'Intro microeconomía',     asig:true,  conv:true},
+      {id:'recom',       icon:'✓', tone:'good', l:'Propuesta recomendada',    s:'Sin observaciones',       asig:true,  conv:true},
+      {id:'mod-prop',    icon:'✎', tone:'warn', l:'Propuesta modificada',     s:'Cambios solicitados',     asig:true,  conv:false},
+      {id:'mod-mat',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Tras formalización',      asig:true,  conv:false},
+      {id:'inicio',      icon:'✉', tone:'neu',  l:'Inicio de semestre',       s:'Primer contacto',         asig:false, conv:false},
+    ],
+    2:[
+      {id:'bienvenida-b', icon:'◎', tone:'good', l:'Bienvenida',               s:'Buenas notas',            tipo:'bienvenida2', asig:false, conv:false},
+      {id:'bienvenida-r', icon:'◎', tone:'warn', l:'Bienvenida',               s:'Notas regulares',         tipo:'bienvenida2', asig:false, conv:false},
+      {id:'bienvenida-m', icon:'◎', tone:'bad',  l:'Bienvenida',               s:'Malas notas',             tipo:'bienvenida2', asig:false, conv:false},
+      {id:'recom2',       icon:'✓', tone:'good', l:'Propuesta recomendada',    s:'Sin observaciones',       tipo:'prop2',       asig:true,  conv:false},
+      {id:'no-recom2',    icon:'✕', tone:'bad',  l:'Propuesta no recomendada', s:'Cambios necesarios',      tipo:'prop2',       asig:false, conv:false},
+      {id:'ant2',         icon:'⏰', tone:'neu',  l:'Matrícula anticipada',     s:'Gestión anticipada',      tipo:'ind2',        asig:false, conv:false},
+      {id:'mod-prop2',    icon:'✎', tone:'warn', l:'Propuesta modificada',     s:'Cambios solicitados',     tipo:'ind2',        asig:false, conv:false},
+      {id:'mod-mat2',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Tras formalización',      tipo:'ind2',        asig:false, conv:false},
+    ],
+    3:[
+      {id:'bienvenida3-b',icon:'◎',tone:'good', l:'Bienvenida',               s:'Buenas notas',            asig:false, conv:false},
+      {id:'bienvenida3-r',icon:'◎',tone:'warn', l:'Bienvenida',               s:'Notas regulares',         asig:false, conv:false},
+      {id:'recom3',       icon:'✓',tone:'good', l:'Propuesta recomendada',    s:'Sin observaciones',       asig:true,  conv:false},
+      {id:'no-recom3',    icon:'✕',tone:'bad',  l:'Propuesta no recomendada', s:'Cambios necesarios',      asig:true,  conv:false},
+      {id:'ant3',         icon:'⏰',tone:'neu',  l:'Matrícula anticipada',     s:'Gestión anticipada',      asig:false, conv:false},
+      {id:'mod-prop3',    icon:'✎',tone:'warn', l:'Propuesta modificada',     s:'Cambios solicitados',     asig:true,  conv:false},
+      {id:'mod-mat3',     icon:'✎',tone:'warn', l:'Matrícula modificada',     s:'Tras formalización',      asig:true,  conv:false},
+    ]
+  },
+  ca: {
+    1:[
+      {id:'no-rec-prev', icon:'✕', tone:'bad',  l:'Proposta no recomanada',   s:'Requisits previs',        asig:true,  conv:true},
+      {id:'no-rec-micro',icon:'✕', tone:'bad',  l:'Proposta no recomanada',   s:'Intro microeconomia',     asig:true,  conv:true},
+      {id:'recom',       icon:'✓', tone:'good', l:'Proposta recomanada',      s:'Sense observacions',      asig:true,  conv:true},
+      {id:'mod-prop',    icon:'✎', tone:'warn', l:'Proposta modificada',      s:'Canvis sol·licitats',     asig:true,  conv:false},
+      {id:'mod-mat',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Després de formalitzar',  asig:true,  conv:false},
+      {id:'inicio',      icon:'✉', tone:'neu',  l:'Inici de semestre',        s:'Primer contacte',         asig:false, conv:false},
+    ],
+    2:[
+      {id:'bienvenida-b', icon:'◎', tone:'good', l:'Benvinguda',               s:'Bones notes',             tipo:'bienvenida2', asig:false, conv:false},
+      {id:'bienvenida-r', icon:'◎', tone:'warn', l:'Benvinguda',               s:'Notes regulars',          tipo:'bienvenida2', asig:false, conv:false},
+      {id:'bienvenida-m', icon:'◎', tone:'bad',  l:'Benvinguda',               s:'Males notes',             tipo:'bienvenida2', asig:false, conv:false},
+      {id:'recom2',       icon:'✓', tone:'good', l:'Proposta recomanada',      s:'Sense observacions',      tipo:'prop2',       asig:true,  conv:false},
+      {id:'no-recom2',    icon:'✕', tone:'bad',  l:'Proposta no recomanada',   s:'Canvis necessaris',       tipo:'prop2',       asig:false, conv:false},
+      {id:'ant2',         icon:'⏰', tone:'neu',  l:'Matrícula anticipada',     s:'Gestió anticipada',       tipo:'ind2',        asig:false, conv:false},
+      {id:'mod-prop2',    icon:'✎', tone:'warn', l:'Proposta modificada',      s:'Canvis sol·licitats',     tipo:'ind2',        asig:false, conv:false},
+      {id:'mod-mat2',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Després de formalitzar',  tipo:'ind2',        asig:false, conv:false},
+    ],
+    3:[
+      {id:'bienvenida3-b',icon:'◎',tone:'good', l:'Benvinguda',               s:'Bones notes',             asig:false, conv:false},
+      {id:'bienvenida3-r',icon:'◎',tone:'warn', l:'Benvinguda',               s:'Notes regulars',          asig:false, conv:false},
+      {id:'recom3',       icon:'✓',tone:'good', l:'Proposta recomanada',      s:'Sense observacions',      asig:true,  conv:false},
+      {id:'no-recom3',    icon:'✕',tone:'bad',  l:'Proposta no recomanada',   s:'Canvis necessaris',       asig:true,  conv:false},
+      {id:'ant3',         icon:'⏰',tone:'neu',  l:'Matrícula anticipada',     s:'Gestió anticipada',       asig:false, conv:false},
+      {id:'mod-prop3',    icon:'✎',tone:'warn', l:'Proposta modificada',      s:'Canvis sol·licitats',     asig:true,  conv:false},
+      {id:'mod-mat3',     icon:'✎',tone:'warn', l:'Matrícula modificada',     s:'Després de formalitzar',  asig:true,  conv:false},
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════
+// PLANTILLAS
+// ═══════════════════════════════════════════
+
+// Mapa de nombres de asignaturas ES → CA
+const ASIG_CA = {
+  "Competencias digitales":                                    "Competències digitals",
+  "Inglés B2.1":                                               "Anglès B2.1",
+  "Inglés B2.2":                                               "Anglès B2.2",
+  "Introducción a la empresa":                                 "Introducció a l'empresa",
+  "Introducción a la información financiera de la empresa":    "Introducció a la informació financera de l'empresa",
+  "Introducción a la macroeconomía":                           "Introducció a la macroeconomia",
+  "Introducción a la microeconomía":                           "Introducció a la microeconomia",
+  "Fundamentos de matemáticas":                                "Fonaments de matemàtiques",
+  "Fundamentos de estadística":                                "Fonaments d'estadística",
+  "Sociología":                                                "Sociologia",
+  "Historia económica":                                        "Història econòmica",
+  "Política y Sociedad":                                       "Política i Societat",
+  "Iniciación a las matemáticas":                              "Iniciació a les matemàtiques",
+};
+
+// Bloque CFGS para insertar en plantillas
+// cfgsKey = nombre en ES (clave de CFGS_CONV); l = idioma actual
+function getBloqueCFGS(nom, cfgsKey, l) {
+  if(!cfgsKey){
+    return l==='es'
+      ? `\nPor otro lado, por tu CFGS en [selecciona el CFGS], son susceptibles de convalidar las siguientes asignaturas:\n· [selecciona el CFGS en el desplegable]\n\nPara ello, deberás solicitar el trámite de Evaluación de Estudios Previos (EEP) que te comenté en el email de bienvenida.\n`
+      : `\nD'altra banda, pel teu CFGS en [selecciona el CFGS], són susceptibles de convalidar les assignatures següents:\n· [selecciona el CFGS al desplegable]\n\nPer fer-ho, hauràs de sol·licitar el tràmit d'Avaluació d'Estudis Previs (AEP) que et vaig comentar al correu de benvinguda.\n`;
+  }
+
+  // Nombre a mostrar en el idioma correcto
+  const cfgsIdx = CFGS.indexOf(cfgsKey);
+  const cfgsDisplay = (l==='ca' && cfgsIdx>=0) ? CFGS_CA[cfgsIdx] : cfgsKey;
+
+  const asigListES = CFGS_CONV[cfgsKey] || [];
+  const asigLines = asigListES.length
+    ? asigListES.map(a => {
+        const name = l==='ca' ? (ASIG_CA[a] || a) : a;
+        return '· ' + name;
+      }).join('\n')
+    : (l==='es' ? '· [sin asignaturas definidas]' : '· [sense assignatures definides]');
+
+  return l==='es'
+    ? `\nPor otro lado, por tu CFGS en ${cfgsDisplay}, son susceptibles de convalidar las siguientes asignaturas:\n${asigLines}\n\nPara ello, deberás solicitar el trámite de Evaluación de Estudios Previos (EEP) que te comenté en el email de bienvenida.\n`
+    : `\nD'altra banda, pel teu CFGS en ${cfgsDisplay}, són susceptibles de convalidar les assignatures següents:\n${asigLines}\n\nPer fer-ho, hauràs de sol·licitar el tràmit d'Avaluació d'Estudis Previs (AEP) que et vaig comentar al correu de benvinguda.\n`;
+}
+
+function getBloqueGrado(l) {
+  return l === 'es'
+    ? `\nDado que has cursado estudios universitarios previos, puedes solicitar el reconocimiento de créditos a través de la Evaluación de Estudios Previos (EEP). Es importante que lo tramites antes de formalizar la matrícula, ya que puede afectar a las asignaturas que selecciones. Puedes consultar más información en: Campus / Trámites / Convalidaciones / Evaluación de estudios previos.\n`
+    : `\nAtès que has cursat estudis universitaris previs, pots sol·licitar el reconeixement de crèdits a través de l'Avaluació d'Estudis Previs (AEP). És important que ho tramitis abans de formalitzar la matrícula, ja que pot afectar les assignatures que seleccionis. Pots consultar més informació a: Campus / Tràmits / Convalidacions / Avaluació d'estudis previs.\n`;
+}
+
+// Versión recordatorio para rematrícula
+function getBloqueGradoRemat(l) {
+  return l === 'es'
+    ? `\nRecuerda que, por tus estudios universitarios previos, hay asignaturas que podrían ser susceptibles de ser convalidadas. Te invito a solicitar la Evaluación de Estudios Previos (EEP) cuando se abra el trámite, ya que nos permitirá planificar mejor tu itinerario académico.\n`
+    : `\nRecorda que, pels teus estudis universitaris previs, hi ha assignatures que podrien ser susceptibles de ser convalidades. T'invito a sol·licitar l'Avaluació d'Estudis Previs (AEP) quan s'obri el tràmit, ja que ens permetrà planificar millor el teu itinerari acadèmic.\n`;
+}
+
+function getBloqueCFGSRemat(cfgsKey, l) {
+  if(!cfgsKey){
+    return l==='es'
+      ? `\nRecuerda que tienes pendiente solicitar la EEP, ya que con tu CFGS en [selecciona el CFGS], son susceptibles de convalidar las siguientes asignaturas:\n· [selecciona el CFGS en el desplegable]\n`
+      : `\nRecorda que tens pendent sol·licitar l'AEP, ja que amb el teu CFGS en [selecciona el CFGS], són susceptibles de convalidar les assignatures següents:\n· [selecciona el CFGS al desplegable]\n`;
+  }
+  const cfgsIdx = CFGS.indexOf(cfgsKey);
+  const cfgsDisplay = (l==='ca' && cfgsIdx>=0) ? CFGS_CA[cfgsIdx] : cfgsKey;
+  const asigListES = CFGS_CONV[cfgsKey] || [];
+  const asigLines = asigListES.length
+    ? asigListES.map(a => '· ' + (l==='ca' ? (ASIG_CA[a]||a) : a)).join('\n')
+    : (l==='es' ? '· [sin asignaturas definidas]' : '· [sense assignatures definides]');
+  return l==='es'
+    ? `\nRecuerda que tienes pendiente solicitar la EEP, ya que con tu CFGS en ${cfgsDisplay}, son susceptibles de convalidar las siguientes asignaturas:\n${asigLines}\n\nPara ello, deberás solicitar el trámite de Evaluación de Estudios Previos (EEP) que te comenté en el email de bienvenida.\n`
+    : `\nRecorda que tens pendent sol·licitar l'AEP, ja que amb el teu CFGS en ${cfgsDisplay}, són susceptibles de convalidar les assignatures següents:\n${asigLines}\n\nPer fer-ho, hauràs de sol·licitar el tràmit d'Avaluació d'Estudis Previs (AEP) que et vaig comentar al correu de benvinguda.\n`;
+}
+
+// Bloque cambio de tutor (3ª matrícula)
+function getBloqueCanviTutor(l) {
+  return l === 'es'
+    ? `\nRecuerda que, una vez formalizada tu tercera matrícula, pasaré a ser sustituido por un/a tutor/a de seguimiento que te acompañará hasta el final de tus estudios. Te avisaré por correo cuando se haga efectivo el cambio. Hasta entonces, seguiré siendo tu tutor de referencia.\n`
+    : `\nRecorda que, un cop formalitzada la teva tercera matrícula, passaré a ser substituït per un/a tutor/a de seguiment que t'acompanyarà fins al final dels teus estudis. T'avisaré per correu quan es faci efectiu el canvi. Fins aleshores, continuaré sent el teu tutor de referència.\n`;
+}
+
+const TEMPLATES = {
+
+  // ── 1ª mat · Propuesta no recomendada (requisitos previos) ──
+  'no-rec-prev': {
+    vars: { auto: ['[NOM]', '[HORES]'], manual: ['[MAX_ASIG]'] },
+    es: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Buenos días, ${nom}:
+
+Me gustaría realizar algunas consideraciones sobre tu propuesta de matrícula.
+
+En primer lugar, te recuerdo que cada asignatura requiere una dedicación real de entre 8 y 10 horas semanales para poder seguir el ritmo de las actividades que se proponen. En este sentido, mi recomendación es que tu primera matrícula sea más conservadora en cuanto al número de asignaturas, ya que esto te permitirá adaptarte al entorno y la metodología de la UOC de forma satisfactoria.
+
+Teniendo esto en cuenta, así como las horas de dedicación al estudio señaladas en el cuestionario (${hores}h), mi recomendación es que matricules un máximo de [MAX_ASIG] asignaturas en este primer semestre; esto te permitirá una adaptación mucho más ágil y adecuada a tu disponibilidad. Recuerda que siempre podrás aumentar la carga lectiva en futuros semestres, si así lo consideras oportuno.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'es') : ''}${convGrado ? getBloqueGrado('es') : ''}
+En relación con las asignaturas propuestas, debes tener en cuenta que existen una serie de requisitos previos para cursar determinadas asignaturas y así seguir un itinerario académico lógico. Por ejemplo, para cursar Introducción a la macroeconomía debes cursar previamente Introducción a la microeconomía. Puedes consultar todos estos requisitos desde tu Campus / Información de interés antes de hacer la matrícula / Todos los planes de estudio / Economía.
+
+Mi recomendación para tu primera matrícula es una combinación de las siguientes asignaturas:
+${asigs}
+
+Por lo tanto, te invito a formalizar la matrícula siguiendo mis recomendaciones. Si necesitas alguna aclaración adicional, no dudes en escribirme.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Bon dia, ${nom},
+
+M'agradaria fer algunes consideracions sobre la teva proposta de matrícula.
+
+En primer lloc, et recordo que cada assignatura requereix una dedicació real d'entre 8 i 10 hores setmanals per poder seguir el ritme de les activitats que es proposen. En aquest sentit, la meva recomanació és que la teva primera matrícula sigui més conservadora pel que fa al nombre d'assignatures, ja que això et permetrà adaptar-te a l'entorn i la metodologia de la UOC de forma satisfactòria.
+
+Tenint això en compte, així com les hores de dedicació a l'estudi assenyalades al qüestionari (${hores}h), la meva recomanació és que et matriculis d'un màxim de [MAX_ASIG] assignatures en aquest primer semestre; això et permetrà una adaptació molt més àgil i adequada a la teva disponibilitat. Recorda que sempre podràs augmentar la càrrega lectiva en futurs semestres, si així ho consideres oportú.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'ca') : ''}${convGrado ? getBloqueGrado('ca') : ''}
+En relació amb les assignatures proposades, has de tenir en compte que existeixen una sèrie de requisits previs per cursar determinades assignatures i així seguir un itinerari acadèmic lògic. Per exemple, per cursar Introducció a la macroeconomia has de cursar prèviament Introducció a la microeconomia. Pots consultar tots aquests requisits des del teu Campus / Informació d'interès abans de fer la matrícula / Tots els plans d'estudis / Economia.
+
+La meva recomanació per a la teva primera matrícula és una combinació de les assignatures següents:
+${asigs}
+
+Per tant, t'invito a formalitzar la matrícula seguint les meves recomanacions. Si necessites alguna aclariment addicional, no dubtis a escriure'm.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 1ª mat · Propuesta no recomendada (intro microeconomía) ──
+  'no-rec-micro': {
+    vars: { auto: ['[NOM]', '[HORES]'], manual: ['[MAX_ASIG]'] },
+    es: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Buenos días, ${nom}:
+
+Me gustaría realizar algunas consideraciones sobre tu propuesta de matrícula.
+
+En primer lugar, te recuerdo que cada asignatura requiere una dedicación real de entre 8 y 10 horas semanales para poder seguir el ritmo de las actividades que se proponen. En este sentido, mi recomendación es que tu primera matrícula sea más conservadora en cuanto al número de asignaturas, ya que esto te permitirá adaptarte al entorno y la metodología de la UOC de forma satisfactoria.
+
+Teniendo esto en cuenta, así como las horas de dedicación al estudio señaladas en el cuestionario (${hores}h), mi recomendación es que matricules un máximo de [MAX_ASIG] asignaturas en este primer semestre; esto te permitirá una adaptación mucho más ágil y adecuada a tu disponibilidad. Recuerda que siempre podrás aumentar la carga lectiva en futuros semestres, si así lo consideras oportuno.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'es') : ''}${convGrado ? getBloqueGrado('es') : ''}
+En relación con las asignaturas elegidas, no te recomiendo que curses Introducción a la microeconomía en tu primer semestre; te sugiero dejarla para la próxima matrícula y aprovechar este semestre para reforzar tu base matemática, ya sea con Iniciación a las matemáticas o con Fundamentos de matemáticas. Si tu nivel es igual o superior al de bachillerato, te recomiendo Fundamentos de matemáticas; si deseas repasar los conceptos básicos o tu base no es muy sólida, te recomiendo empezar por Iniciación a las matemáticas.
+
+El resto de las asignaturas que has propuesto, ${asigs}, me parece una elección adecuada para tu primera matrícula.
+
+Por lo tanto, te invito a formalizar la matrícula siguiendo mis recomendaciones. Si necesitas alguna aclaración adicional, no dudes en escribirme.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Bon dia, ${nom},
+
+M'agradaria fer algunes consideracions sobre la teva proposta de matrícula.
+
+En primer lloc, et recordo que cada assignatura requereix una dedicació real d'entre 8 i 10 hores setmanals per poder seguir el ritme de les activitats que es proposen. En aquest sentit, la meva recomanació és que la teva primera matrícula sigui més conservadora pel que fa al nombre d'assignatures, ja que això et permetrà adaptar-te a l'entorn i la metodologia de la UOC de forma satisfactòria.
+
+Tenint això en compte, així com les hores de dedicació a l'estudi assenyalades al qüestionari (${hores}h), la meva recomanació és que et matriculis d'un màxim de [MAX_ASIG] assignatures en aquest primer semestre; això et permetrà una adaptació molt més àgil i adequada a la teva disponibilitat. Recorda que sempre podràs augmentar la càrrega lectiva en futurs semestres, si així ho consideres oportú.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'ca') : ''}${convGrado ? getBloqueGrado('ca') : ''}
+En relació amb les assignatures triades, no et recomano que cursis Introducció a la microeconomia en el teu primer semestre; et suggereixo deixar-la per a la pròxima matrícula i aprofitar aquest semestre per reforçar la teva base matemàtica, ja sigui amb Iniciació a les matemàtiques o amb Fonaments de matemàtiques. Si el teu nivell és igual o superior al de batxillerat, et recomano Fonaments de matemàtiques; si vols repassar els conceptes bàsics o la teva base no és gaire sòlida, et recomano començar per Iniciació a les matemàtiques.
+
+La resta de les assignatures que has proposat, ${asigs}, em sembla una elecció adequada per a la teva primera matrícula.
+
+Per tant, t'invito a formalitzar la matrícula seguint les meves recomanacions. Si necessites alguna aclariment addicional, no dubtis a escriure'm.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 1ª mat · Propuesta recomendada ──
+  'recom': {
+    vars: { auto: ['[NOM]', '[HORES]'], manual: ['[MAX_ASIG]'] },
+    es: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Buenos días, ${nom}:
+
+Me gustaría realizar algunas consideraciones sobre tu propuesta de matrícula.
+
+En primer lugar, te recuerdo que cada asignatura requiere una dedicación real de entre 8 y 10 horas semanales para poder seguir el ritmo de las actividades que se proponen. En este sentido, mi recomendación es que tu primera matrícula sea conservadora en cuanto al número de asignaturas, ya que esto te permitirá adaptarte al entorno y la metodología de la UOC de forma satisfactoria.
+
+Teniendo esto en cuenta, así como las horas de dedicación al estudio señaladas en el cuestionario (${hores}h), mi recomendación es que matricules un máximo de [MAX_ASIG] asignaturas en este primer semestre, tal y como has propuesto; esto te permitirá una adaptación mucho más ágil y adecuada a tu disponibilidad. Recuerda que siempre podrás aumentar la carga lectiva en futuros semestres, si así lo consideras oportuno.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'es') : ''}${convGrado ? getBloqueGrado('es') : ''}
+En relación con tu propuesta de matrícula, esta me parece acertada tanto en número como en la elección de las asignaturas. Por un lado, comenzar con [MAX_ASIG] asignaturas te permitirá adaptarte a la metodología y al entorno de la UOC de forma mucho más ágil. Por otro lado, ${asigs} es una combinación que recomendamos para comenzar los estudios de Economía.
+
+Dicho esto, te invito a que formalices la matrícula sobre la base de la propuesta realizada. Si necesitas alguna aclaración adicional, no dudes en escribirme.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom, hores, asigs, convCFGS, cfgsName, convGrado) =>
+`Bon dia, ${nom},
+
+M'agradaria fer algunes consideracions sobre la teva proposta de matrícula.
+
+En primer lloc, et recordo que cada assignatura requereix una dedicació real d'entre 8 i 10 hores setmanals per poder seguir el ritme de les activitats que es proposen. En aquest sentit, la meva recomanació és que la teva primera matrícula sigui conservadora pel que fa al nombre d'assignatures, ja que això et permetrà adaptar-te a l'entorn i la metodologia de la UOC de forma satisfactòria.
+
+Tenint això en compte, així com les hores de dedicació a l'estudi assenyalades al qüestionari (${hores}h), la meva recomanació és que et matriculis d'un màxim de [MAX_ASIG] assignatures en aquest primer semestre, tal com has proposat; això et permetrà una adaptació molt més àgil i adequada a la teva disponibilitat. Recorda que sempre podràs augmentar la càrrega lectiva en futurs semestres, si així ho consideres oportú.
+${convCFGS ? getBloqueCFGS(nom, cfgsName, 'ca') : ''}${convGrado ? getBloqueGrado('ca') : ''}
+En relació amb la teva proposta de matrícula, aquesta em sembla encertada tant en nombre com en l'elecció de les assignatures. D'una banda, començar amb [MAX_ASIG] assignatures et permetrà adaptar-te a la metodologia i a l'entorn de la UOC de manera molt més àgil. De l'altra, ${asigs} és una combinació que recomanem per començar els estudis d'Economia.
+
+Dit això, t'invito a que formalitzis la matrícula sobre la base de la proposta realitzada. Si necessites alguna aclariment addicional, no dubtis a escriure'm.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 1ª mat · Propuesta modificada ──
+  'mod-prop': {
+    vars: { auto: ['[NOM]'], manual: [] },
+    es: (nom) =>
+`Buenos días, ${nom}:
+
+Esta propuesta de matrícula me parece mucho más acertada, una vez has introducido los cambios indicados en la anterior tutorización.
+
+Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+
+Si necesitas alguna aclaración o asistencia durante el proceso de matriculación, no dudes en escribirme.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom) =>
+`Bon dia, ${nom},
+
+Aquesta proposta de matrícula em sembla molt més encertada, un cop has introduït els canvis indicats en la tutorització anterior.
+
+Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+
+Si necessites alguna aclariment o assistència durant el procés de matriculació, no dubtis a escriure'm.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 1ª mat · Matrícula modificada ──
+  'mod-mat': {
+    vars: { auto: ['[NOM]'], manual: [] },
+    es: (nom) =>
+`Buenos días, ${nom}:
+
+En relación con tu nueva matrícula, esta me parece mucho más acertada, una vez se ha modificado siguiendo las recomendaciones que comentamos.
+
+Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+
+Si necesitas alguna aclaración, no dudes en ponerte en contacto conmigo.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom) =>
+`Bon dia, ${nom},
+
+En relació amb la teva nova matrícula, aquesta em sembla molt més encertada, un cop s'ha modificat seguint les recomanacions que vam comentar.
+
+Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+
+Si necessites alguna aclariment, no dubtis a posar-te en contacte amb mi.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 2ª mat · Matrícula modificada ──
+  'mod-mat2': {
+    vars: { auto: ['[NOM]'], manual: [] },
+    es: (nom) =>
+`Buenos días, ${nom}:
+
+En relación con tu nueva matrícula, esta me parece mucho más acertada, una vez se ha modificado siguiendo las recomendaciones que comentamos.
+
+Si necesitas alguna aclaración, no dudes en ponerte en contacto conmigo.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom) =>
+`Bon dia, ${nom},
+
+En relació amb la teva nova matrícula, aquesta em sembla molt més encertada, un cop s'ha modificat seguint les recomanacions que vam comentar.
+
+Si necessites alguna aclariment, no dubtis a posar-te en contacte amb mi.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 2ª mat · Matrícula anticipada ──
+  'ant2': {
+    vars: { auto: ['[NOM]'], manual: [] },
+    es: (nom) =>
+`Buenos días, ${nom}:
+
+Tal y como comentamos en la propuesta de matrícula anticipada que valoramos, la elección que has realizado me parece adecuada, tanto en número como en las asignaturas elegidas, ya que te permitirá continuar con un itinerario académico coherente y adaptado a tu disponibilidad.
+
+Por lo tanto, te invito a que formalices dicha propuesta.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom) =>
+`Bon dia, ${nom},
+
+Tal com vam comentar en la proposta de matrícula anticipada que vam valorar, l'elecció que has realitzat em sembla adequada, tant en nombre com en les assignatures triades, ja que et permetrà continuar amb un itinerari acadèmic coherent i adaptat a la teva disponibilitat.
+
+Per tant, t'invito a que formalitzis aquesta proposta.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  },
+
+  // ── 2ª mat · Propuesta modificada (igual que 1ª) ──
+  'mod-prop2': {
+    vars: { auto: ['[NOM]'], manual: [] },
+    es: (nom) =>
+`Buenos días, ${nom}:
+
+Esta propuesta de matrícula me parece mucho más acertada, una vez has introducido los cambios indicados en la anterior tutorización.
+
+Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+
+Si necesitas alguna aclaración o asistencia durante el proceso de matriculación, no dudes en escribirme.
+
+Un saludo,
+Óscar Blázquez
+Tutor de inicio — Grado de Economía
+Universitat Oberta de Catalunya`,
+    ca: (nom) =>
+`Bon dia, ${nom},
+
+Aquesta proposta de matrícula em sembla molt més encertada, un cop has introduït els canvis indicats en la tutorització anterior.
+
+Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+
+Si necessites alguna aclariment o assistència durant el procés de matriculació, no dubtis a escriure'm.
+
+Salutacions,
+Òscar Blázquez
+Tutor d'inici — Grau d'Economia
+Universitat Oberta de Catalunya`
+  }
+
+};
+
+
+// ═══════════════════════════════════════════
+let lang = 'es', stream = 'IB', curMat = 1, curSit = null;
+let selectedAsig = new Set(), asigFilter = 'all', asigPanelOpen = false;
+
+// ── Estado compositor 2ª matrícula ──
+let mat2Bienvenida = null;
+let mat2Propuesta  = null;
+let mat2ExtraAsig  = false;
+
+// Bloques de texto 2ª matrícula
+const MAT2_BLOQUES = {
+  es: {
+    bienvenida: {
+      'bienvenida-b': `Buenos días, [NOM]:\n\nEn primer lugar, aprovecho para felicitarte por el desempeño académico que has mostrado durante el semestre que finaliza, lo que además indica una buena adaptación a la metodología de la universidad.`,
+      'bienvenida-r': `Buenos días, [NOM]:\n\nEn primer lugar, me gustaría felicitarte por el esfuerzo académico realizado durante el semestre, aunque no se haya visto reflejado en las calificaciones de todas las asignaturas matriculadas.`,
+      'bienvenida-m': `Buenos días, [NOM]:\n\nEn primer lugar, me gustaría felicitarte por el esfuerzo académico realizado durante el semestre, aunque no se haya visto reflejado en las calificaciones de las asignaturas matriculadas.`
+    },
+    propuesta: {
+      'recom2':    (extraAsig, extraNom) =>
+        `En relación con tu propuesta de matrícula, esta me parece acertada tanto en número como en las asignaturas elegidas, lo que te permite avanzar por un itinerario académico lógico y adaptado a tu disponibilidad.`
+        + (extraAsig ? `\nSi desearas aumentar a [N_EXTRA] las asignaturas matriculadas, te recomiendo matricularte de ${extraNom||'[asignatura extra]'}.` : '')
+        + `\n\nPor lo tanto, te invito a que formalices la matrícula sobre la base de la propuesta realizada.`,
+      'no-recom2': () =>
+        `En relación con tu propuesta de matrícula, me parece adecuado matricularte de [MAX_ASIG] asignaturas. No obstante, no te recomiendo matricular la asignatura de [ASIG_NO_RECOM] y sí centrarte en finalizar otras asignaturas básicas como, por ejemplo, [ASIG_ALTERNATIVA].\n\nPor lo tanto, te invito a que formalices la matrícula teniendo en cuenta mis sugerencias.`
+    },
+    despedida: `Si necesitas alguna aclaración adicional, no dudes en escribirme nuevamente.\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya`
+  },
+  ca: {
+    bienvenida: {
+      'bienvenida-b': `Bon dia, [NOM],\n\nEn primer lloc, aprofito per felicitar-te pel rendiment acadèmic que has mostrat durant el semestre que finalitza, la qual cosa indica també una bona adaptació a la metodologia de la universitat.`,
+      'bienvenida-r': `Bon dia, [NOM],\n\nEn primer lloc, m'agradaria felicitar-te per l'esforç acadèmic realitzat durant el semestre, tot i que no s'hagi vist reflectit en les qualificacions de totes les assignatures matriculades.`,
+      'bienvenida-m': `Bon dia, [NOM],\n\nEn primer lloc, m'agradaria felicitar-te per l'esforç acadèmic realitzat durant el semestre, tot i que no s'hagi vist reflectit en les qualificacions de les assignatures matriculades.`
+    },
+    propuesta: {
+      'recom2':    (extraAsig, extraNom) =>
+        `En relació amb la teva proposta de matrícula, aquesta em sembla encertada tant en nombre com en les assignatures triades, la qual cosa et permet avançar per un itinerari acadèmic lògic i adaptat a la teva disponibilitat.`
+        + (extraAsig ? `\nSi volguessis augmentar a [N_EXTRA] les assignatures matriculades, et recomano matricular-te de ${extraNom||'[assignatura extra]'}.` : '')
+        + `\n\nPer tant, t'invito a que formalitzis la matrícula sobre la base de la proposta realitzada.`,
+      'no-recom2': () =>
+        `En relació amb la teva proposta de matrícula, em sembla adequat matricular-te de [MAX_ASIG] assignatures. No obstant això, no et recomano matricular l'assignatura de [ASIG_NO_RECOM] i sí centrar-te a finalitzar altres assignatures bàsiques com, per exemple, [ASIG_ALTERNATIVA].\n\nPer tant, t'invito a que formalitzis la matrícula tenint en compte les meves suggerències.`
+    },
+    despedida: `Si necessites alguna aclariment addicional, no dubtis a escriure'm.\n\nSalutacions,\nÒscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya`
+  }
+};
+
+
+function getNom()  { const el=document.getElementById('fv-e'); return (el&&el.textContent!=='—')?el.textContent:'[NOM]'; }
+function getHores(){ const el=document.getElementById('fv-s'); return (el&&el.textContent!=='—')?el.textContent:'[HORES]'; }
+function getAsigName(a){ return lang==='ca'?a.nc:a.n; }
+
+// Tabla asignaturas máximas 1ª matrícula
+// Filas: horas trabajo (0, 1-10, 11-20, 21-30, 31-40, +40)
+// Columnas: horas estudio (0-10, 10-20, 20-30, +30)
+const TABLA_MAX_ASIG = [
+  //  0-10h  10-20h  20-30h  +30h
+  [     2,      2,      3,     4  ],  // 0h trabajo
+  [     2,      2,      3,     4  ],  // 1-10h
+  [     2,      2,      3,     4  ],  // 11-20h
+  [     2,      2,      3,     3  ],  // 21-30h
+  [     1,      2,      2,     3  ],  // 31-40h
+  [     1,      2,      2,     3  ],  // +40h
+];
+
+function calcMaxAsig(horasTrabajo, horasEstudio) {
+  // Determinar fila (horas trabajo)
+  let fila;
+  if      (horasTrabajo === 0)              fila = 0;
+  else if (horasTrabajo <= 10)              fila = 1;
+  else if (horasTrabajo <= 20)             fila = 2;
+  else if (horasTrabajo <= 30)             fila = 3;
+  else if (horasTrabajo <= 40)             fila = 4;
+  else                                      fila = 5;
+
+  // Determinar columna (horas estudio)
+  let col;
+  if      (horasEstudio <= 10)             col = 0;
+  else if (horasEstudio <= 20)             col = 1;
+  else if (horasEstudio <= 30)             col = 2;
+  else                                      col = 3;
+
+  return TABLA_MAX_ASIG[fila][col];
+}
+
+function getMaxAsig() {
+  // Leer horas trabajo (col R) y horas estudio (col S) del panel lateral
+  const elR = document.getElementById('fv-r');
+  const elS = document.getElementById('fv-s');
+  const rawR = elR ? elR.textContent.trim() : '—';
+  const rawS = elS ? elS.textContent.trim() : '—';
+
+  // Intentar parsear — los valores pueden ser "20h", "20-30h", "20", etc.
+  const parseH = str => {
+    if(!str || str==='—') return null;
+    // Si es un rango "20-30h", tomar el extremo inferior
+    const range = str.match(/^(\d+)\s*[-–]\s*\d+/);
+    if(range) return parseInt(range[1]);
+    const single = str.match(/(\d+)/);
+    return single ? parseInt(single[1]) : null;
+  };
+
+  const hTrabajo = parseH(rawR);
+  const hEstudio = parseH(rawS);
+
+  if(hTrabajo === null || hEstudio === null) return '[MAX_ASIG]';
+  return String(calcMaxAsig(hTrabajo, hEstudio));
+}
+
+function buildAsigText(){
+  if(!selectedAsig.size) return lang==='es'?'· [Selecciona las asignaturas con el botón de arriba]':'· [Selecciona les assignatures amb el botó de dalt]';
+  return Array.from(selectedAsig).map(i=>'· '+getAsigName(ASIGNATURAS[i])).join('\n');
+}
+function getCFGS(){ return getCFGSKey(); }
+function isChkCFGS()  { return document.getElementById('chk-cfgs').checked; }
+function isChkGrado() { return document.getElementById('chk-grado').checked; }
+function isChk3a()    { return document.getElementById('chk-3a').checked; }
+
+// ═══════════════════════════════════════════
+// STREAM / LANG
+// ═══════════════════════════════════════════
+function setStream(s){
+  stream=s;
+  // Resetear selector de pestañas al cambiar stream
+  const sel = document.getElementById('sheet-select');
+  if (sel) { sel.innerHTML = '<option value="">— carga las pestañas —</option>'; sel.disabled = true; }
+  const sheetMsg = document.getElementById('sheet-msg');
+  if (sheetMsg) { sheetMsg.textContent = ''; sheetMsg.className = 'sync-msg'; }
+  document.getElementById('st-ib').classList.toggle('active',s==='IB');
+  document.getElementById('st-ct').classList.toggle('active',s==='CT');
+  setLang(s==='IB'?'es':'ca');
+  applyStreamToEnlaces();
+  rebuildInforme();
+}
+function setLang(l){
+  lang=l;
+  applyStaticUI(); renderFields(); renderSits(); renderAsigList();
+  if(mat2ExtraAsig) populateExtraAsig();
+  rebuildTemplate();
+}
+
+// ═══════════════════════════════════════════
+// UI ESTÁTICA
+// ═══════════════════════════════════════════
+const STATIC = {
+  es: {
+    'tb-title':'Dashboard de tutorización',
+    'lbl-alumno':'Alumno activo','lbl-personal':'Datos personales (D–I)','lbl-info':'Información del estudiante (O–W)',
+    'lbl-pestaña':'Pestaña del Sheets','lbl-buscar':'Buscar por IDP','lbl-clear':'Limpiar alumno','idp-go-btn':'Buscar','idp-ph':'ej. 12345678',
+    'btn-sync':'Sincronizar Sheets','mtab-tut':'Tutorización','mtab-enl':'Enlaces','mtab-inf':'Informe',
+    'mb1':'1ª matrícula','mb2':'Rematrícula',
+    'lbl-sit':'Situación',
+    'conv-options-label':'Añadir al mensaje',
+    'conv-cfgs-name':'Convalidaciones CFGS','conv-cfgs-desc':'Recordatorio EEP con CFGS',
+    'conv-grado-name':'Convalidaciones grado','conv-grado-desc':'Recordatorio EEP con estudios universitarios',
+    'conv-3a-name':'3ª matrícula','conv-3a-desc':'Añade aviso de cambio de tutor/a',
+    'cfgs-label':'Selecciona el CFGS del estudiante',
+    'asig-toggle-label':'Asignaturas recomendadas','asig-panel-label':'Selecciona las asignaturas','asig-clear-btn':'Limpiar selección',
+    'af-all':'Todas','af-sep':'Septiembre','af-feb':'Febrero','af-tots':'Ambos','af-bas':'Básicas','af-obl':'Obligatorias','af-opt':'Optativas',
+    'lbl-enl':'Rutas del campus',
+    'et-campus':'Campus virtual','es-campus':'Acceso y documentación','et-mat':'Matrícula','es-mat':'Propuesta y validación',
+    'et-conv':'Convalidaciones','es-conv':'EEP / RAEP, traslado','et-tut':'Reserva tutoría','es-tut':'Google Calendar',
+    'et-plan':'Plan de estudios','es-plan':'Estructura del grado','et-otro':'Otro','es-otro':'Plantilla libre',
+    'lbl-inf-datos':'Informe Final Tutoría (BF–BM)','inf-tpl-title':'Informe de seguimiento',
+    'tpl-empty':'Selecciona una situación','copy':'Copiar','copied':'¡Copiado!',
+    'stu-none':'Sin seleccionar','cfgs-default':'— Escoge el CFGS —',
+    'tpl-ph':'Selecciona una situación para ver la plantilla...',
+    'inf-ph':'El informe se generará aquí con los datos del alumno...',
+    'var-auto-pre':'Automático: ','var-manual-pre':'Editar antes de copiar: '
+  },
+  ca: {
+    'tb-title':'Tauler de tutorització',
+    'lbl-alumno':'Estudiant actiu','lbl-personal':'Dades personals (D–I)','lbl-info':"Informació de l'estudiant (O–W)",
+    'lbl-pestaña':'Pestanya del Sheets','lbl-buscar':'Cercar per IDP','lbl-clear':'Netejar estudiant','idp-go-btn':'Cercar','idp-ph':'p. ex. 12345678',
+    'btn-sync':'Sincronitzar Sheets','mtab-tut':'Tutorització','mtab-enl':'Enllaços','mtab-inf':'Informe',
+    'mb1':'1a matrícula','mb2':'Rematrícula',
+    'lbl-sit':'Situació',
+    'conv-options-label':'Afegir al missatge',
+    'conv-cfgs-name':'Convalidacions CFGS','conv-cfgs-desc':'Recordatori AEP amb CFGS',
+    'conv-grado-name':'Convalidacions grau','conv-grado-desc':'Recordatori AEP amb estudis universitaris',
+    'conv-3a-name':'3a matrícula','conv-3a-desc':'Afegeix avís de canvi de tutor/a',
+    'cfgs-label':"Selecciona el CFGS de l'estudiant",
+    'asig-toggle-label':'Assignatures recomanades','asig-panel-label':'Selecciona les assignatures','asig-clear-btn':'Netejar selecció',
+    'af-all':'Totes','af-sep':'Setembre','af-feb':'Febrer','af-tots':'Ambdós','af-bas':'Bàsiques','af-obl':'Obligatòries','af-opt':'Optatives',
+    'lbl-enl':"Rutes del campus",
+    'et-campus':'Campus virtual','es-campus':"Accés i documentació",'et-mat':'Matrícula','es-mat':'Proposta i validació',
+    'et-conv':'Convalidacions','es-conv':'AEP / RAEP, trasllat','et-tut':'Reserva tutoria','es-tut':'Google Calendar',
+    'et-plan':"Pla d'estudis",'es-plan':'Estructura del grau','et-otro':'Altre','es-otro':'Plantilla lliure',
+    'lbl-inf-datos':"Dades de l'informe (BG–BL)",'inf-tpl-title':'Informe de seguiment',
+    'tpl-empty':'Selecciona una situació','copy':'Copiar','copied':'Copiat!',
+    'stu-none':'Sense seleccionar','cfgs-default':'— Escull el CFGS —',
+    'tpl-ph':'Selecciona una situació per veure la plantilla...',
+    'inf-ph':"L'informe es generarà aquí amb les dades de l'estudiant...",
+    'var-auto-pre':'Automàtic: ','var-manual-pre':'Editar abans de copiar: '
+  }
+};
+
+function applyStaticUI(){
+  const u=STATIC[lang];
+  Object.keys(u).forEach(k=>{
+    const el=document.getElementById(k);
+    if(el&&!['var-auto-pre','var-manual-pre','tpl-empty','copy','copied','stu-none','cfgs-default','tpl-ph','inf-ph'].includes(k))
+      el.textContent=u[k];
+  });
+  document.getElementById('tpl-ta').placeholder=u['tpl-ph'];
+  document.getElementById('inf-ta').placeholder=u['inf-ph'];
+  const idpInp=document.getElementById('idp-input'); if(idpInp)idpInp.placeholder=u['idp-ph']||'IDP';
+  ['copy-lbl','ecopy-lbl','icopy-lbl'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u['copy'];});
+  const sel=document.getElementById('cfgs-select');
+  if(sel&&sel.options[0])sel.options[0].text=u['cfgs-default'];
+  // Traducir tabs y etiquetas de la sección de rutas
+  const incLbl = lang==='es'?'Incorporación':'Incorporació';
+  const alumLbl = lang==='es'?'Alumni':'Alumni';
+  const checkLbl = lang==='es'?'Verificar con el estudiante':'Verificar amb l\'estudiant';
+  document.getElementById('eseg-inc').textContent = incLbl;
+  document.getElementById('eseg-alum').textContent = alumLbl;
+  document.querySelectorAll('.enl-checklist-label').forEach(el=>{ el.textContent=checkLbl; });
+  // enl-title data-es/ca handled by applyStreamToEnlaces()
+}
+
+// ═══════════════════════════════════════════
+// CAMPOS SIDEBAR
+// ═══════════════════════════════════════════
+function renderFields(){
+  const cols=COLS[lang];
+  document.getElementById('fields-personal').innerHTML=cols.personal.map(c=>`<div class="field-row"><span class="fk">${c.k}</span><span class="fv empty" id="fv-${c.id}">—</span></div>`).join('');
+  document.getElementById('fields-info').innerHTML=cols.info.map(c=>`<div class="field-row"><span class="fk">${c.k}</span><span class="fv empty" id="fv-${c.id}">—</span></div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// SITUACIONES
+// ═══════════════════════════════════════════
+function renderSits(){
+  const sits=SITS[lang][curMat];
+
+  // En 2ª matrícula, marcar active tanto la bienvenida como la propuesta seleccionadas
+  document.getElementById('sit-grid').innerHTML=sits.map((s,i)=>{
+    let isActive=false;
+    if(curMat===2){
+      isActive=(s.id===mat2Bienvenida)||(s.id===mat2Propuesta)||(curSit===i&&s.tipo==='ind2');
+    } else {
+      isActive=(curSit===i);
+    }
+    return `<button class="sit-btn ${s.tone}${isActive?' active':''}" onclick="selectSit(${i})">
+      <span class="sit-icon">${s.icon}</span>
+      <div class="sit-text">
+        <div class="sit-label">${s.l}</div>
+        <div class="sit-sub">${s.s}</div>
+      </div>
+    </button>`;
+  }).join('');
+
+  const sit = curSit!==null ? sits[curSit] : null;
+
+  // conv-options: en 1ª solo si sit.conv; en rematrícula siempre visible cuando hay situación activa
+  const showConvOptions = curMat===1 ? !!(sit&&sit.conv) : !!(mat2Bienvenida||mat2Propuesta||sit);
+  document.getElementById('conv-options').classList.toggle('visible', showConvOptions);
+
+  // checkbox 3ª matrícula: solo visible en rematrícula
+  document.getElementById('conv-row-3a').style.display = curMat===2 ? 'flex' : 'none';
+
+  // CFGS
+  updateCFGSVisibility();
+
+  // Botón asignaturas
+  const btn=document.getElementById('asig-toggle-btn');
+  if(sit&&sit.asig){ btn.classList.add('visible'); }
+  else { btn.classList.remove('visible','open'); document.getElementById('asig-panel').classList.remove('open'); asigPanelOpen=false; }
+
+  // Asignatura extra (solo rematrícula propuesta recomendada)
+  const extraWrap=document.getElementById('extra-asig-wrap');
+  if(curMat===2 && mat2Propuesta==='recom2'){
+    extraWrap.style.display='block';
+  } else {
+    extraWrap.style.display='none';
+    document.getElementById('chk-extra-asig').checked=false;
+    document.getElementById('extra-asig-input').style.display='none';
+    mat2ExtraAsig=false;
+  }
+}
+
+function updateCFGSVisibility(){
+  // En 1ª: solo si sit.conv; en rematrícula: siempre disponible si chk-cfgs marcado
+  const sitConv = curSit!==null && SITS[lang][curMat][curSit] && SITS[lang][curMat][curSit].conv;
+  const show = isChkCFGS() && (curMat===1 ? sitConv : true);
+  document.getElementById('cfgs-wrap').classList.toggle('visible', show);
+  if(show) populateCFGS();
+}
+
+function selectSit(i){
+  curSit=i; selectedAsig.clear(); asigPanelOpen=false;
+  document.getElementById('chk-cfgs').checked=false;
+  document.getElementById('chk-grado').checked=false;
+  document.getElementById('asig-panel').classList.remove('open');
+  document.getElementById('asig-toggle-btn').classList.remove('open');
+  document.getElementById('asig-toggle-icon').textContent='▾';
+
+  const s=SITS[lang][curMat][i];
+
+  // ── 2ª matrícula: actualizar estado compositivo ──
+  if(curMat===2){
+    if(s.tipo==='bienvenida2'){
+      mat2Bienvenida=s.id;
+      // Si ya hay propuesta seleccionada, mantenerla
+    } else if(s.tipo==='prop2'){
+      mat2Propuesta=s.id;
+      // Si no hay bienvenida aún, no pasa nada — se añadirá cuando la seleccionen
+    } else if(s.tipo==='ind2'){
+      // Plantilla independiente: resetear compositor
+      mat2Bienvenida=null; mat2Propuesta=null; mat2ExtraAsig=false;
+    }
+    // Actualizar título del compositor
+    let tituloPartes=[];
+    if(mat2Bienvenida){
+      const bSit=SITS[lang][2].find(x=>x.id===mat2Bienvenida);
+      if(bSit) tituloPartes.push(bSit.s);
+    }
+    if(mat2Propuesta && s.tipo!=='ind2'){
+      const pSit=SITS[lang][2].find(x=>x.id===mat2Propuesta);
+      if(pSit) tituloPartes.push(pSit.l);
+    }
+    if(s.tipo==='ind2') tituloPartes=[s.l+' — '+s.s];
+    document.getElementById('tpl-title').textContent=tituloPartes.length?tituloPartes.join(' + '):s.l+' — '+s.s;
+  } else {
+    document.getElementById('tpl-title').textContent=s.l+(s.s?' — '+s.s:'');
+  }
+
+  const b=document.getElementById('tpl-badge');
+  b.style.display='inline-block';
+  b.textContent=`${curMat}${lang==='es'?'ª':'a'} mat. · ${stream}`;
+  renderSits(); renderAsigList();
+  rebuildTemplate();
+}
+
+function onExtraAsigChange(){
+  mat2ExtraAsig=document.getElementById('chk-extra-asig').checked;
+  document.getElementById('extra-asig-row').classList.toggle('active',mat2ExtraAsig);
+  const inputDiv=document.getElementById('extra-asig-input');
+  inputDiv.style.display=mat2ExtraAsig?'block':'none';
+  if(mat2ExtraAsig) populateExtraAsig();
+  rebuildTemplate();
+}
+
+function populateExtraAsig(){
+  const sel=document.getElementById('mat2-extra-nom');
+  const cur=sel.value;
+  const placeholder=lang==='es'?'— Escoge la asignatura extra —':'— Escull l\'assignatura extra —';
+  sel.innerHTML=`<option value="">${placeholder}</option>`+
+    ASIGNATURAS.map((a,i)=>{
+      const name=getAsigName(a);
+      return `<option value="${i}"${String(i)===cur?' selected':''}>${name}</option>`;
+    }).join('');
+}
+
+function onConvChange(){
+  document.getElementById('conv-row-cfgs').classList.toggle('active', isChkCFGS());
+  document.getElementById('conv-row-grado').classList.toggle('active', isChkGrado());
+  document.getElementById('conv-row-3a').classList.toggle('active', isChk3a());
+  updateCFGSVisibility();
+  rebuildTemplate();
+}
+
+// ═══════════════════════════════════════════
+// CFGS
+// ═══════════════════════════════════════════
+function populateCFGS(){
+  const sel=document.getElementById('cfgs-select');
+  const cur=sel.value; // cur es el índice numérico
+  sel.innerHTML=`<option value="">${STATIC[lang]['cfgs-default']}</option>`+
+    CFGS.map((c,i)=>{
+      const label = lang==='ca' ? CFGS_CA[i] : c;
+      return `<option value="${i}"${String(i)===cur?' selected':''}>${label}</option>`;
+    }).join('');
+}
+
+// Devuelve el nombre del CFGS seleccionado en el idioma actual
+function getCFGSName(){
+  const idx = document.getElementById('cfgs-select').value;
+  if(!idx && idx!==0) return '';
+  return lang==='ca' ? CFGS_CA[parseInt(idx)] : CFGS[parseInt(idx)];
+}
+
+// Devuelve el índice del CFGS seleccionado (para buscar en CFGS_CONV, que usa claves ES)
+function getCFGSKey(){
+  const idx = document.getElementById('cfgs-select').value;
+  if(idx==='' || idx===null) return '';
+  return CFGS[parseInt(idx)];
+}
+
+// ═══════════════════════════════════════════
+// ASIGNATURAS
+// ═══════════════════════════════════════════
+const SEM_LABEL={es:{tots:'Ambos',sep:'Septiembre',feb:'Febrero'},ca:{tots:'Ambdós',sep:'Setembre',feb:'Febrer'}};
+const SEM_CLS={tots:'sem-tots',sep:'sem-sep',feb:'sem-feb'};
+const TYPE_LABEL={es:{bas:'Formación básica',obl:'Obligatorias',opt:'Optativas'},ca:{bas:'Formació bàsica',obl:'Obligatòries',opt:'Optatives'}};
+
+function toggleAsigPanel(){
+  asigPanelOpen=!asigPanelOpen;
+  document.getElementById('asig-toggle-btn').classList.toggle('open',asigPanelOpen);
+  document.getElementById('asig-panel').classList.toggle('open',asigPanelOpen);
+  document.getElementById('asig-toggle-icon').textContent=asigPanelOpen?'▴':'▾';
+}
+
+function renderAsigList(){
+  const list=document.getElementById('asig-list');
+  const sl=SEM_LABEL[lang], tl=TYPE_LABEL[lang];
+  const filtered=ASIGNATURAS.map((a,idx)=>({a,idx})).filter(({a})=>{
+    if(asigFilter==='sep') return a.sem==='sep';
+    if(asigFilter==='feb') return a.sem==='feb';
+    if(asigFilter==='tots') return a.sem==='tots';
+    if(asigFilter==='bas') return a.t==='bas';
+    if(asigFilter==='obl') return a.t==='obl';
+    if(asigFilter==='opt') return a.t==='opt';
+    return true;
+  });
+  const groups={bas:[],obl:[],opt:[]};
+  filtered.forEach(({a,idx})=>groups[a.t].push({a,idx}));
+  let html='';
+  ['bas','obl','opt'].forEach(t=>{
+    if(!groups[t].length) return;
+    if(asigFilter==='all'||asigFilter===t) html+=`<div class="asig-group-label">${tl[t]}</div>`;
+    groups[t].forEach(({a,idx})=>{
+      const checked=selectedAsig.has(idx);
+      const req=a.req?a.req[lang]:'';
+      html+=`<div class="asig-item${checked?' checked':''}" data-idx="${idx}">
+        <input class="asig-cb" type="checkbox"${checked?' checked':''} tabindex="-1">
+        <div class="asig-right">
+          <div class="asig-item-info">
+            <div class="asig-item-name">${getAsigName(a)}</div>
+            ${req?`<div class="asig-item-req">${req}</div>`:''}
+          </div>
+          <span class="asig-item-sem ${SEM_CLS[a.sem]}">${sl[a.sem]}</span>
+        </div>
+      </div>`;
+    });
+  });
+  list.innerHTML=html||`<div style="padding:8px;font-size:11px;color:#8b95a1">Sin resultados</div>`;
+  list.querySelectorAll('.asig-item').forEach(el=>{
+    el.addEventListener('click',function(e){
+      e.preventDefault(); e.stopPropagation();
+      const idx=parseInt(this.dataset.idx);
+      if(selectedAsig.has(idx)) selectedAsig.delete(idx); else selectedAsig.add(idx);
+      this.classList.toggle('checked',selectedAsig.has(idx));
+      this.querySelector('input').checked=selectedAsig.has(idx);
+      updateAsigPreview(); rebuildTemplate();
+    });
+  });
+  updateAsigPreview();
+}
+
+function clearAsig(){ selectedAsig.clear(); renderAsigList(); rebuildTemplate(); }
+
+function updateAsigPreview(){
+  const prev=document.getElementById('asig-preview');
+  if(!selectedAsig.size){ prev.style.display='none'; return; }
+  prev.style.display='block';
+  prev.textContent=Array.from(selectedAsig).map(i=>getAsigName(ASIGNATURAS[i])).join(' · ');
+}
+
+function setAsigFilter(f,btn){
+  asigFilter=f;
+  document.querySelectorAll('.asig-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAsigList();
+}
+
+// ═══════════════════════════════════════════
+// PLANTILLA
+// ═══════════════════════════════════════════
+function buildAsigInline(){
+  // Asignaturas en formato inline separadas por comas, con y/e automático antes de la última
+  if(!selectedAsig.size) return lang==='es'?'[selecciona las asignaturas]':'[selecciona les assignatures]';
+  const names=Array.from(selectedAsig).map(i=>getAsigName(ASIGNATURAS[i]));
+  if(names.length===1) return names[0];
+  const last=names[names.length-1];
+  const rest=names.slice(0,-1);
+  // y → e si la siguiente palabra empieza por i o hi (español); i → e si empieza por i o hi (catalán)
+  let conj;
+  if(lang==='ca'){
+    conj=/^[iI]/.test(last)?'e':'i';
+  } else {
+    conj=/^[iIhH][iI]/.test(last)?'e':'y';
+  }
+  return rest.join(', ')+' '+conj+' '+last;
+}
+
+function rebuildTemplate(){
+  if(curSit===null && curMat!==2) return;
+  const vi=document.getElementById('var-info');
+  const nom=getNom();
+
+  // ── 2ª matrícula: lógica compositiva ──
+  if(curMat===2){
+    const s=curSit!==null?SITS[lang][2][curSit]:null;
+    const tipo=s?s.tipo:null;
+
+    // Plantillas independientes (ant2, mod-prop2, mod-mat2)
+    if(tipo==='ind2' && s){
+      const tpl=TEMPLATES[s.id];
+      if(tpl){
+        document.getElementById('tpl-ta').value=tpl[lang](nom);
+        vi.style.display='none';
+      }
+      return;
+    }
+
+    // Compositor: bienvenida + propuesta + bloques opcionales + despedida
+    const b=MAT2_BLOQUES[lang];
+    let parts=[];
+
+    if(mat2Bienvenida) parts.push(b.bienvenida[mat2Bienvenida].replace('[NOM]',nom));
+    if(mat2Propuesta){
+      const fnProp=b.propuesta[mat2Propuesta];
+      if(mat2Propuesta==='recom2'){
+        const extraSel=document.getElementById('mat2-extra-nom');
+        const extraIdx=extraSel?extraSel.value:'';
+        const extraNom=extraIdx!==''?getAsigName(ASIGNATURAS[parseInt(extraIdx)]):'';
+        parts.push('\n\n'+fnProp(mat2ExtraAsig, extraNom));
+      } else {
+        parts.push('\n\n'+fnProp());
+      }
+    }
+
+    // Bloques opcionales antes de la despedida
+    if(isChkCFGS()) parts.push(getBloqueCFGSRemat(getCFGS(), lang));
+    if(isChkGrado()) parts.push(getBloqueGradoRemat(lang));
+    if(isChk3a()) parts.push(getBloqueCanviTutor(lang));
+
+    if(parts.length>0) parts.push('\n\n' + b.despedida);
+
+    const result=parts.join('');
+    document.getElementById('tpl-ta').value=result||'';
+    vi.style.display=result?'flex':'none';
+    if(result){
+      const u=STATIC[lang];
+      document.getElementById('var-auto').textContent=u['var-auto-pre']+'[NOM]';
+      const manuals=[];
+      if(mat2Propuesta==='no-recom2') manuals.push('[MAX_ASIG]','[ASIG_NO_RECOM]','[ASIG_ALTERNATIVA]');
+      if(mat2Propuesta==='recom2'&&mat2ExtraAsig) manuals.push('[N_EXTRA]');
+      document.getElementById('var-manual').textContent=manuals.length?u['var-manual-pre']+manuals.join(', '):'';
+      if(!manuals.length) document.getElementById('var-manual').textContent='';
+    }
+    return;
+  }
+
+  // ── 1ª y 3ª matrícula: lógica original ──
+  if(curSit===null) return;
+  const s=SITS[lang][curMat][curSit];
+  const hores=getHores();
+  const convCFGS=isChkCFGS(), cfgsName=getCFGS(), convGrado=isChkGrado();
+  const tpl=TEMPLATES[s.id];
+
+  if(tpl){
+    let result;
+    if(s.id==='no-rec-prev'){
+      result=tpl[lang](nom,hores,buildAsigText(),convCFGS,cfgsName,convGrado);
+    } else if(s.id==='no-rec-micro'||s.id==='recom'){
+      result=tpl[lang](nom,hores,buildAsigInline(),convCFGS,cfgsName,convGrado);
+    } else if(['mod-prop','mod-mat','mod-prop2','mod-mat2','ant2'].includes(s.id)){
+      result=tpl[lang](nom);
+    } else {
+      result=tpl[lang](nom,hores,buildAsigText(),convCFGS,cfgsName,convGrado);
+    }
+
+    // 1ª matrícula: sustituir [MAX_ASIG] automáticamente
+    if(curMat===1 && ['no-rec-prev','no-rec-micro','recom'].includes(s.id)){
+      const maxAsig=getMaxAsig();
+      if(maxAsig!=='[MAX_ASIG]'){
+        result=result.split('[MAX_ASIG]').join(maxAsig);
+        tpl.vars.auto=['[NOM]','[HORES]','MAX_ASIG (auto)'];
+        tpl.vars.manual=[];
+      } else {
+        tpl.vars.auto=['[NOM]','[HORES]'];
+        tpl.vars.manual=['[MAX_ASIG]'];
+      }
+    }
+
+    document.getElementById('tpl-ta').value=result;
+    vi.style.display=tpl.vars.auto.length||tpl.vars.manual.length?'flex':'none';
+    const u=STATIC[lang];
+    document.getElementById('var-auto').textContent=tpl.vars.auto.length?u['var-auto-pre']+tpl.vars.auto.join(', '):'';
+    document.getElementById('var-manual').textContent=tpl.vars.manual.length?u['var-manual-pre']+tpl.vars.manual.join(', '):'';
+    if(!tpl.vars.auto.length&&!tpl.vars.manual.length) vi.style.display='none';
+  } else {
+    const ml=`${curMat}${lang==='es'?'ª':'a'} mat.`;
+    document.getElementById('tpl-ta').value=lang==='es'
+      ?`Buenos días, ${nom}:\n\n[Plantilla pendiente: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí irá el contenido]\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya`
+      :`Bon dia, ${nom},\n\n[Plantilla pendent: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí anirà el contingut]\n\nSalutacions,\nÒscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya`;
+    vi.style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════════
+// MATRICULA SWITCH
+// ═══════════════════════════════════════════
+function switchMat(n,btn){
+  curMat=n; curSit=null; selectedAsig.clear(); asigPanelOpen=false;
+  mat2Bienvenida=null; mat2Propuesta=null; mat2ExtraAsig=false;
+  document.getElementById('chk-cfgs').checked=false;
+  document.getElementById('chk-grado').checked=false;
+  document.getElementById('chk-3a').checked=false;
+  document.querySelectorAll('.mat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tpl-title').textContent=STATIC[lang]['tpl-empty'];
+  document.getElementById('tpl-badge').style.display='none';
+  document.getElementById('tpl-ta').value='';
+  document.getElementById('var-info').style.display='none';
+  document.getElementById('conv-options').classList.remove('visible');
+  document.getElementById('cfgs-wrap').classList.remove('visible');
+  document.getElementById('asig-toggle-btn').classList.remove('visible','open');
+  document.getElementById('asig-panel').classList.remove('open');
+  renderSits();
+  const names={1:STATIC[lang]['mb1'],2:STATIC[lang]['mb2']};
+  document.getElementById('stu-badge').innerHTML=`<span class="badge-mat b${n}">${names[n]}</span>`;
+}
+
+// ═══════════════════════════════════════════
+// SECCIONES PRINCIPALES
+// ═══════════════════════════════════════════
+function switchMain(sec,btn){
+  ['tut','enl','inf'].forEach(s=>{document.getElementById('sec-'+s).className=s===sec?'sec-visible':'sec-hidden';});
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// COPIAR
+// ═══════════════════════════════════════════
+function doCopy(taId,btnId,lblId){
+  const ta=document.getElementById(taId);
+  if(!ta.value.trim()) return;
+  navigator.clipboard.writeText(ta.value).then(()=>{
+    const btn=document.getElementById(btnId), lbl=document.getElementById(lblId);
+    btn.classList.add('copied'); lbl.textContent=STATIC[lang]['copied'];
+    setTimeout(()=>{btn.classList.remove('copied'); lbl.textContent=STATIC[lang]['copy'];},1800);
+  });
+}
+
+// ═══════════════════════════════════════════
+// ENLACES
+// ═══════════════════════════════════════════
+function switchEnlSeg(seg, btn) {
+  document.querySelectorAll('.enl-seg-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.enl-group').forEach(g => g.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('enlg-' + seg).classList.add('active');
+}
+
+function applyStreamToEnlaces() {
+  document.body.classList.toggle('ct-stream', stream === 'CT');
+  const l = stream === 'IB' ? 'es' : 'ca';
+  document.querySelectorAll('.enl-title[data-es]').forEach(el => {
+    el.textContent = el.getAttribute('data-' + l) || el.getAttribute('data-es');
+  });
+  const checkLbl = l === 'es' ? 'Verificar con el estudiante' : "Verificar amb l'estudiant";
+  document.querySelectorAll('.enl-checklist-label').forEach(el => { el.textContent = checkLbl; });
+  document.getElementById('eseg-inc').textContent = l === 'es' ? 'Incorporación' : 'Incorporació';
+  document.getElementById('eseg-alum').textContent = 'Alumni';
+
+  // Actualizar labels del select BI (EEP→IB / AEP→CT)
+  const infBi = document.getElementById('inf-bi');
+  if (infBi) {
+    const opts = {
+      ambos: l === 'es' ? 'EEP y RAEP solicitado' : 'AEP i RAEP sol·licitat',
+      eep:   l === 'es' ? 'EEP solicitado'         : 'AEP sol·licitat',
+      raep:  l === 'es' ? 'RAEP solicitado'        : 'RAEP sol·licitat',
+      nada:  l === 'es' ? 'Nada'                   : 'Res'
+    };
+    Array.from(infBi.options).forEach(o => {
+      if (opts[o.value]) o.text = opts[o.value];
+    });
+  }
+
+  // Actualizar labels del select BG (seguiment)
+  const infBg = document.getElementById('inf-bg');
+  if (infBg) {
+    const opts = {
+      si:        l === 'es' ? 'Sí, sin problemas'  : 'Sí, cap problema',
+      irregular: 'Irregular',
+      problemes: l === 'es' ? 'Problemas'          : 'Problemes'
+    };
+    Array.from(infBg.options).forEach(o => {
+      if (opts[o.value]) o.text = opts[o.value];
+    });
+  }
+
+  // Actualizar labels BJ (comunicació)
+  const infBj = document.getElementById('inf-bj');
+  if (infBj) {
+    const opts = {
+      bona:       l === 'es' ? 'Buena, sigue directrices' : 'Bona, segueix directrius',
+      regular:    'Regular',
+      inexistent: l === 'es' ? 'Inexistente'              : 'Inexistent'
+    };
+    Array.from(infBj.options).forEach(o => {
+      if (opts[o.value]) o.text = opts[o.value];
+    });
+  }
+
+  // Actualizar labels BK (seguimiento)
+  const infBk = document.getElementById('inf-bk');
+  if (infBk) {
+    const opts = {
+      si:     l === 'es' ? 'Sí'       : 'Sí',
+      unpoco: l === 'es' ? 'Un poco'  : 'Una mica',
+      no:     'No'
+    };
+    Array.from(infBk.options).forEach(o => {
+      if (opts[o.value]) o.text = opts[o.value];
+    });
+  }
+
+  // Actualizar labels BF (motivaciones)
+  const infBf = document.getElementById('inf-bf');
+  if (infBf) {
+    const opts = {
+      personal: l === 'es' ? 'Enriquecimiento personal'          : 'Enriquiment personal',
+      laboral:  l === 'es' ? 'Motivos laborales'                 : 'Motius laborals',
+      primeros: l === 'es' ? 'Primeros estudios universitarios'  : 'Primers estudis universitaris'
+    };
+    Array.from(infBf.options).forEach(o => {
+      if (opts[o.value]) o.text = opts[o.value];
+    });
+  }
+
+  // Actualizar placeholders BL/BM
+  const infBl = document.getElementById('inf-bl');
+  const infBm = document.getElementById('inf-bm');
+  if (infBl) infBl.placeholder = l === 'es' ? 'Texto libre...' : 'Text lliure...';
+  if (infBm) infBm.placeholder = l === 'es' ? 'Texto libre...' : 'Text lliure...';
+}
+
+function toggleEnl(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.enl-chevron');
+  const isOpen = body.classList.contains('open');
+  const group = header.closest('.enl-group');
+  group.querySelectorAll('.enl-body.open').forEach(b => b.classList.remove('open'));
+  group.querySelectorAll('.enl-item-header.open').forEach(h => h.classList.remove('open'));
+  group.querySelectorAll('.enl-chevron.open').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    body.classList.add('open');
+    header.classList.add('open');
+    chevron.classList.add('open');
+  }
+}
+
+function copyEnl(id, btn) {
+  const text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    const orig = btn.textContent;
+    btn.textContent = lang === 'es' ? '¡Copiado!' : 'Copiat!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1600);
+  });
+}
+
+function copyEnlResult(id, btn) {
+  const el = document.getElementById(id);
+  if (!el || !el.textContent.trim()) return;
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    btn.classList.add('copied');
+    const orig = btn.textContent;
+    btn.textContent = lang === 'es' ? '¡Copiado!' : 'Copiat!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1600);
+  });
+}
+
+// Subopciones de ruta (Documentació accés, Anulación, Hacer matrícula)
+function updateSuboptRuta(chk) {
+  const container = chk.closest('.enl-body');
+  const isES = stream === 'IB';
+  const valKey = isES ? 'data-val-es' : 'data-val-ca';
+
+  // Encontrar el result-div más próximo en la misma rama (ruta-es o ruta-ca)
+  const rutaDiv = chk.closest('.ruta-es, .ruta-ca');
+  if (!rutaDiv) return;
+  const resultId = rutaDiv.querySelector('.enl-ruta-result');
+  if (!resultId) return;
+
+  // Solo un checkbox activo a la vez por bloque de subopciones
+  const allChks = rutaDiv.querySelectorAll('.enl-subopt input[type=checkbox]');
+  allChks.forEach(c => { if (c !== chk) c.checked = false; });
+
+  if (chk.checked) {
+    const val = chk.closest('.enl-subopt').getAttribute(valKey);
+    if (val) {
+      resultId.textContent = val;
+      resultId.style.display = 'block';
+    }
+  } else {
+    resultId.textContent = '';
+    resultId.style.display = 'none';
+  }
+}
+
+// Checklist descuentos → inserta nombre en la ruta (radio: selección única)
+function updateDescRuta(group) {
+  const groupEl = document.getElementById('enlg-' + group);
+  const descItem = Array.from(groupEl.querySelectorAll('.enl-item')).find(el => el.querySelector('.desc-chk'));
+  if (!descItem) return;
+
+  const checked = descItem.querySelector('.desc-chk:checked');
+  const resultEl = document.getElementById('rr-desc-' + group);
+  const copyRow = document.getElementById('rr-desc-' + group + '-copy');
+  if (!resultEl) return;
+
+  if (!checked) {
+    resultEl.style.display = 'none';
+    if (copyRow) copyRow.style.display = 'none';
+    return;
+  }
+
+  const isES = stream === 'IB';
+  const baseId = isES ? 'er-desc-base-' + group + '-es' : 'er-desc-base-' + group + '-ca';
+  const baseEl = document.getElementById(baseId);
+  const base = baseEl ? baseEl.textContent.trim() : '';
+  const label = checked.getAttribute('data-label');
+  const ruta = base + (label ? ' / ' + label : '');
+  resultEl.textContent = ruta;
+  resultEl.style.display = 'block';
+  if (copyRow) copyRow.style.display = 'flex';
+}
+
+// ── Click en texto de checklist / subopciones activa el input ──
+document.addEventListener('click', function(e) {
+  // enl-check-item: click en span o a activa el input hermano
+  const checkItem = e.target.closest('.enl-check-item');
+  if (checkItem && e.target.tagName !== 'INPUT') {
+    if (e.target.tagName === 'A') return; // dejar que el link funcione
+    const inp = checkItem.querySelector('input');
+    if (inp) { inp.click(); }
+    return;
+  }
+  // enl-subopt: click en span activa el input hermano
+  const subopt = e.target.closest('.enl-subopt');
+  if (subopt && e.target.tagName !== 'INPUT') {
+    const inp = subopt.querySelector('input');
+    if (inp) { inp.click(); }
+  }
+});
+
+// ═══════════════════════════════════════════
+// INFORME FINAL TUTORÍA
+// ═══════════════════════════════════════════
+const INF_TEXTS = {
+  es: {
+    saludo: 'Hola:',
+    intro: (nom) => `Te paso el informe de seguimiento de ${nom}, estudiante del Grado de Economía.`,
+    bg: {
+      si:         'Ha seguido correctamente la docencia durante los semestres que lleva cursados en el grado, sin incidencias reseñables.',
+      irregular:  'El seguimiento de la docencia ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres que lleva cursados en el grado.',
+      problemes:  'Ha presentado dificultades significativas en el seguimiento de la docencia durante los semestres que lleva cursados en el grado.'
+    },
+    bh: (n) => `En cuanto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas.`,
+    bi: {
+      ambos:  'Asimismo, ha solicitado tanto la EEP como el RAEP durante los semestres que lleva estudiando en el grado.',
+      eep:    'Asimismo, ha solicitado la EEP durante los semestres que lleva estudiando en el grado.',
+      raep:   'Asimismo, ha solicitado el RAEP durante los semestres que lleva estudiando en el grado.',
+      nada:   'En cuanto a los trámites de convalidación, no ha solicitado ninguno durante los semestres que lleva estudiando en el grado.'
+    },
+    bj: {
+      bona:       'Por otro lado, la comunicación con el tutor ha sido buena y ha seguido las directrices indicadas en todo momento.',
+      regular:    'Por otro lado, la comunicación con el tutor ha sido irregular, con respuestas intermitentes a los correos enviados.',
+      inexistent: 'Por otro lado, la comunicación con el tutor ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido una interacción relevante.'
+    },
+    bk: {
+      si:     'Por todo ello, considero que el estudiante necesita un seguimiento cercano por parte del tutor de seguimiento.',
+      unpoco: 'Por todo ello, considero que el estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.',
+      no:     'Por todo ello, considero que el estudiante no requiere un seguimiento especial por parte del tutor de seguimiento.'
+    },
+    bl: (txt) => `En relación con otras casuísticas a tener en cuenta, señalar que ${txt}`,
+    bm: (txt) => `Además, ${txt}`,
+    bf: {
+      personal: 'Finalmente, señalar que su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de conocimientos.',
+      laboral:  'Finalmente, señalar que su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.',
+      primeros: 'Finalmente, señalar que accede por primera vez a estudios universitarios, lo que ha supuesto un reto adicional en su proceso de adaptación al grado.'
+    },
+    despedida: 'Quedo a tu disposición para cualquier consulta.\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya'
+  },
+  ca: {
+    saludo: 'Hola,',
+    intro: (nom) => `Et passo l'informe de seguiment de ${nom}, estudiant del Grau d'Economia.`,
+    bg: {
+      si:         'Ha seguit correctament la docència durant els semestres que porta cursats al grau, sense incidències destacables.',
+      irregular:  'El seguiment de la docència ha estat irregular, amb alts i baixos en el seu rendiment al llarg dels semestres que porta cursats al grau.',
+      problemes:  'Ha presentat dificultats significatives en el seguiment de la docència durant els semestres que porta cursats al grau.'
+    },
+    bh: (n) => `Pel que fa a la càrrega lectiva, li recomano matricular-se de ${n} assignatura${n==='1'?'':'s'} per semestre en les properes matrícules.`,
+    bi: {
+      ambos:  "Així mateix, ha sol·licitat tant l'AEP com el RAEP durant els semestres que porta estudiant al grau.",
+      eep:    "Així mateix, ha sol·licitat l'AEP durant els semestres que porta estudiant al grau.",
+      raep:   'Així mateix, ha sol·licitat el RAEP durant els semestres que porta estudiant al grau.',
+      nada:   "Pel que fa als tràmits de convalidació, no n'ha sol·licitat cap durant els semestres que porta estudiant al grau."
+    },
+    bj: {
+      bona:       "D'altra banda, la comunicació amb el tutor ha estat bona i ha seguit les directrius indicades en tot moment.",
+      regular:    "D'altra banda, la comunicació amb el tutor ha estat irregular, amb respostes intermitents als correus enviats.",
+      inexistent: "D'altra banda, la comunicació amb el tutor ha estat pràcticament inexistent; no ha respost als correus enviats ni s'ha produït una interacció rellevant."
+    },
+    bk: {
+      si:     'Per tot això, considero que l\'estudiant necessita un seguiment proper per part del tutor de seguiment.',
+      unpoco: 'Per tot això, considero que l\'estudiant podria beneficiar-se d\'un seguiment puntual per part del tutor de seguiment.',
+      no:     'Per tot això, considero que l\'estudiant no requereix un seguiment especial per part del tutor de seguiment.'
+    },
+    bl: (txt) => `Pel que fa a altres casuístiques a tenir en compte, cal assenyalar que ${txt}`,
+    bm: (txt) => `A més, ${txt}`,
+    bf: {
+      personal: "Finalment, cal assenyalar que la seva motivació principal per cursar el grau és l'enriquiment personal i l'adquisició de coneixements.",
+      laboral:  'Finalment, cal assenyalar que la seva motivació principal per cursar el grau és la millora de la seva situació laboral i el desenvolupament professional.',
+      primeros: "Finalment, cal assenyalar que accedeix per primera vegada a estudis universitaris, la qual cosa ha suposat un repte addicional en el seu procés d'adaptació al grau."
+    },
+    despedida: "Quedo a la teva disposició per a qualsevol consulta.\n\nSalutacions,\nÓscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya"
+  }
+};
+
+function rebuildInforme(d) {
+  // d = objeto con datos del Sheets (bf, bg, bh, bi, bj, bk, bl, bm)
+  // Si no hay datos, ocultar el informe
+  if (!d) {
+    document.getElementById('inf-tpl-wrap').style.display = 'none';
+    return;
+  }
+
+  const t   = INF_TEXTS[lang];
+  const nom = getNom();
+
+  // Leer directamente del objeto de datos del Sheets
+  const bf = (d.bf || '').trim();
+  const bg = (d.bg || '').trim();
+  const bh = (d.bh || '').trim();
+  const bi = (d.bi || '').trim();
+  const bj = (d.bj || '').trim();
+  const bk = (d.bk || '').trim();
+  const bl = (d.bl || '').trim();
+  const bm = (d.bm || '').trim();
+
+  if (!bf && !bg && !bh && !bi && !bj && !bk && !bl && !bm) {
+    document.getElementById('inf-tpl-wrap').style.display = 'none';
+    return;
+  }
+
+  const parts = [];
+  parts.push(t.saludo);
+  parts.push('');
+  parts.push(t.intro(nom));
+
+  // BG: Seguiment docència — valor directo del Sheets
+  if (bg) parts.push('\n' + (t.bg[bg.toLowerCase()] || bg));
+
+  // BH: Càrrega lectiva — número directo
+  if (bh) parts.push('\n' + t.bh(bh));
+
+  // BI: AEP/RAEP — valor directo del Sheets
+  if (bi) parts.push('\n' + (t.bi[bi.toLowerCase()] || bi));
+
+  // BJ: Comunicació — valor directo del Sheets
+  if (bj) parts.push('\n' + (t.bj[bj.toLowerCase()] || bj));
+
+  // BK: Necesita seguimiento — valor directo del Sheets
+  if (bk) parts.push('\n' + (t.bk[bk.toLowerCase()] || bk));
+
+  // BL y BM: texto libre
+  if (bl) parts.push('\n' + t.bl(bl));
+  if (bm) parts.push('\n' + t.bm(bm));
+
+  // BF: Motivaciones — valor directo del Sheets
+  if (bf) parts.push('\n' + (t.bf[bf.toLowerCase()] || bf));
+
+  parts.push('\n\n' + t.despedida);
+
+  document.getElementById('inf-ta').value = parts.join('\n');
+  document.getElementById('inf-tpl-wrap').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════
+// GOOGLE SHEETS — JSONP
+// ═══════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/a/macros/uoc.edu/s/AKfycbwzFCOGVTtPIdMPflZ9APhzMMbK4d-S4LQPsG19k7UXE6DheEMZmSt1x4scWga8ksyA/exec';
+
+let _jsonpTimer = null;
+let _allStudents = []; // caché de alumnos de la pestaña activa
+
+// ── Helpers JSONP ──
+function _jsonp(id, url, cb, onErr) {
+  const prev = document.getElementById(id);
+  if (prev) prev.remove();
+  const timer = setTimeout(() => {
+    const s = document.getElementById(id);
+    if (s) s.remove();
+    onErr('timeout');
+  }, 12000);
+  window[cb._name] = function(data) {
+    clearTimeout(timer);
+    const s = document.getElementById(id);
+    if (s) s.remove();
+    cb(data);
+  };
+  const script = document.createElement('script');
+  script.id  = id;
+  script.src = url + '&callback=' + cb._name;
+  script.onerror = () => { clearTimeout(timer); script.remove(); onErr('network'); };
+  document.body.appendChild(script);
+}
+
+// ── Cargar lista de pestañas ──
+function loadSheetNames() {
+  const loadBtn  = document.getElementById('sheet-load-btn');
+  const sel      = document.getElementById('sheet-select');
+  const sheetMsg = document.getElementById('sheet-msg');
+
+  loadBtn.disabled = true;
+  loadBtn.textContent = '…';
+  sheetMsg.className = 'sync-msg info';
+  sheetMsg.textContent = lang === 'es' ? 'Cargando pestañas...' : 'Carregant pestanyes...';
+
+  const cb = function(data) {
+    loadBtn.disabled = false;
+    loadBtn.textContent = '↻';
+    if (data.error) {
+      sheetMsg.className = 'sync-msg err';
+      sheetMsg.textContent = 'Error: ' + data.error;
+      return;
+    }
+    const sheets = data.sheets || [];
+    sel.innerHTML = sheets.length
+      ? sheets.map(n => `<option value="${n}">${n}</option>`).join('')
+      : `<option value="">— sin pestañas —</option>`;
+    sel.disabled = sheets.length === 0;
+    sheetMsg.className = 'sync-msg ok';
+    sheetMsg.textContent = sheets.length
+      ? (lang === 'es' ? `${sheets.length} pestañas` : `${sheets.length} pestanyes`)
+      : (lang === 'es' ? 'Sin pestañas' : 'Sense pestanyes');
+    // Cargar alumnos de la primera pestaña automáticamente
+    if (sheets.length) loadStudentList(sheets[0]);
+  };
+  cb._name = '__sheetsCB';
+
+  _jsonp('__jsonp_sheets',
+    `${SCRIPT_URL}?action=sheets&stream=${encodeURIComponent(stream)}`,
+    cb,
+    (err) => {
+      loadBtn.disabled = false;
+      loadBtn.textContent = '↻';
+      sheetMsg.className = 'sync-msg err';
+      sheetMsg.textContent = lang === 'es' ? 'Error de conexión.' : 'Error de connexió.';
+    }
+  );
+}
+
+// ── Al cambiar pestaña manualmente ──
+function onTabChange() {
+  const tab = document.getElementById('sheet-select').value;
+  if (tab) loadStudentList(tab);
+}
+
+// ── Cargar lista de alumnos de una pestaña ──
+function loadStudentList(tab) {
+  const msg = document.getElementById('sheet-msg');
+  msg.className = 'sync-msg info';
+  msg.textContent = lang === 'es' ? 'Cargando alumnos...' : 'Carregant alumnes...';
+
+  const cb = function(data) {
+    if (data.error) {
+      msg.className = 'sync-msg err';
+      msg.textContent = 'Error: ' + data.error;
+      return;
+    }
+    _allStudents = data.students || [];
+    msg.className = 'sync-msg ok';
+    msg.textContent = lang === 'es'
+      ? `${_allStudents.length} alumnos cargados`
+      : `${_allStudents.length} alumnes carregats`;
+    // Limpiar búsqueda
+    const search = document.getElementById('stu-search');
+    if (search) { search.value = ''; filterStudents(''); }
+  };
+  cb._name = '__studentsCB';
+
+  _jsonp('__jsonp_students',
+    `${SCRIPT_URL}?action=students&stream=${encodeURIComponent(stream)}&tab=${encodeURIComponent(tab)}`,
+    cb,
+    (err) => {
+      msg.className = 'sync-msg err';
+      msg.textContent = lang === 'es' ? 'Error cargando alumnos.' : 'Error carregant alumnes.';
+    }
+  );
+}
+
+// ── Filtrar alumnos en el listado ──
+function filterStudents(query) {
+  const list = document.getElementById('stu-list');
+  if (!list) return;
+  const q = query.trim().toLowerCase();
+
+  if (!q) { list.style.display = 'none'; list.innerHTML = ''; return; }
+
+  const matches = _allStudents.filter(s =>
+    s.name.toLowerCase().includes(q) || s.idp.includes(q)
+  ).slice(0, 30); // máximo 30 resultados
+
+  if (!matches.length) {
+    list.style.display = 'block';
+    list.innerHTML = `<div class="stu-list-empty">${lang === 'es' ? 'Sin resultados' : 'Sense resultats'}</div>`;
+    return;
+  }
+
+  list.style.display = 'block';
+  list.innerHTML = matches.map(s =>
+    `<div class="stu-list-item" onclick="selectStudent('${s.idp}')">
+      <span class="stu-list-name">${s.name}</span>
+      <span class="stu-list-idp">IDP: ${s.idp}</span>
+    </div>`
+  ).join('');
+}
+
+// ── Seleccionar alumno del listado → cargar datos completos ──
+function selectStudent(idp) {
+  const list   = document.getElementById('stu-list');
+  const search = document.getElementById('stu-search');
+  const msg    = document.getElementById('sync-msg');
+  const tab    = document.getElementById('sheet-select').value;
+
+  if (list)   { list.style.display = 'none'; list.innerHTML = ''; }
+  if (search) search.value = '';
+
+  msg.className  = 'sync-msg info';
+  msg.textContent = lang === 'es' ? 'Cargando datos...' : 'Carregant dades...';
+
+  const cb = function(data) {
+    if (data.error) {
+      msg.className = 'sync-msg err';
+      msg.textContent = 'Error: ' + data.error;
+      return;
+    }
+    populateSidebar(data);
+    msg.className = 'sync-msg ok';
+    const nombre = [data.e, data.f].filter(Boolean).join(' ');
+    msg.textContent = lang === 'es' ? `✓ ${nombre} cargado` : `✓ ${nombre} carregat`;
+    document.getElementById('btn-sync-clear').style.display = 'flex';
+  };
+  cb._name = '__dashCB';
+
+  _jsonp('__jsonp_script',
+    `${SCRIPT_URL}?action=student&stream=${encodeURIComponent(stream)}&tab=${encodeURIComponent(tab)}&idp=${encodeURIComponent(idp)}`,
+    cb,
+    (err) => {
+      msg.className = 'sync-msg err';
+      msg.textContent = lang === 'es' ? 'Error de conexión.' : 'Error de connexió.';
+    }
+  );
+}
+
+// ── Mantener doSync por compatibilidad (ya no se usa con el nuevo flujo) ──
+function doSync() { /* reemplazado por selectStudent */ }
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+applyStaticUI();
+renderFields();
+renderSits();
+renderAsigList();
+switchMat(1, document.getElementById('mb1'));
+document.getElementById('stu-name').textContent = STATIC[lang]['stu-none'];
+applyStreamToEnlaces();
+</script>
+</body>
+</html>function populateSidebar(d) {
+  // Campos D–W
+  const fieldIds = ['d','e','f','g','h','i','o','p','q','r','s','t','u','v','w'];
+  fieldIds.forEach(id => {
+    const el = document.getElementById('fv-' + id);
+    if (!el) return;
+    const val = (d[id] !== undefined && d[id] !== null && d[id] !== '') ? String(d[id]) : null;
+    if (val) { el.textContent = val; el.classList.remove('empty'); }
+    else      { el.textContent = '—'; el.classList.add('empty'); }
+  });
+
+  // Cabecera alumno
+  const nom  = d.e || '';
+  const ape1 = d.f || '';
+  const ape2 = d.g || '';
+  const idp  = d.d || '—';
+  const fullName = [nom, ape1, ape2].filter(Boolean).join(' ') || (lang === 'es' ? 'Sin nombre' : 'Sense nom');
+  const initials = ((nom[0] || '') + (ape1[0] || '')).toUpperCase() || '?';
+
+  document.getElementById('stu-name').textContent = fullName;
+  document.getElementById('stu-name').classList.remove('empty');
+  document.getElementById('stu-idp').textContent  = 'IDP: ' + idp;
+  document.getElementById('stu-av').textContent   = initials;
+
+  // Matrícula
+  const matN = parseInt(d.mat) || 1;
+  if (matN >= 1 && matN <= 3) {
+    const btn = document.getElementById('mb' + matN);
+    if (btn) switchMat(matN, btn);
+  }
+
+  // Campos informe BF–BM (lectura directa del Sheets)
+  const infCols = ['bf','bg','bh','bi','bj','bk','bl','bm'];
+  infCols.forEach(col => {
+    const el = document.getElementById('inf-' + col);
+    if (!el) return;
+    const val = (d[col] !== undefined && d[col] !== null && d[col] !== '') ? String(d[col]) : null;
+    if (val) { el.textContent = val; el.classList.remove('empty'); }
+    else      { el.textContent = '—'; el.classList.add('empty'); }
+  });
+
+  // Regenerar informe con los valores del Sheets
+  rebuildInforme(d);
+}
+
+
