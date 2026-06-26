@@ -2407,77 +2407,7 @@ function applyStreamToEnlaces() {
   document.getElementById('eseg-inc').textContent = l === 'es' ? 'Incorporación' : 'Incorporació';
   document.getElementById('eseg-alum').textContent = 'Alumni';
 
-  // Actualizar labels del select BI (EEP→IB / AEP→CT)
-  const infBi = document.getElementById('inf-bi');
-  if (infBi) {
-    const opts = {
-      ambos: l === 'es' ? 'EEP y RAEP solicitado' : 'AEP i RAEP sol·licitat',
-      eep:   l === 'es' ? 'EEP solicitado'         : 'AEP sol·licitat',
-      raep:  l === 'es' ? 'RAEP solicitado'        : 'RAEP sol·licitat',
-      nada:  l === 'es' ? 'Nada'                   : 'Res'
-    };
-    Array.from(infBi.options).forEach(o => {
-      if (opts[o.value]) o.text = opts[o.value];
-    });
-  }
-
-  // Actualizar labels del select BG (seguiment)
-  const infBg = document.getElementById('inf-bg');
-  if (infBg) {
-    const opts = {
-      si:        l === 'es' ? 'Sí, sin problemas'  : 'Sí, cap problema',
-      irregular: 'Irregular',
-      problemes: l === 'es' ? 'Problemas'          : 'Problemes'
-    };
-    Array.from(infBg.options).forEach(o => {
-      if (opts[o.value]) o.text = opts[o.value];
-    });
-  }
-
-  // Actualizar labels BJ (comunicació)
-  const infBj = document.getElementById('inf-bj');
-  if (infBj) {
-    const opts = {
-      bona:       l === 'es' ? 'Buena, sigue directrices' : 'Bona, segueix directrius',
-      regular:    'Regular',
-      inexistent: l === 'es' ? 'Inexistente'              : 'Inexistent'
-    };
-    Array.from(infBj.options).forEach(o => {
-      if (opts[o.value]) o.text = opts[o.value];
-    });
-  }
-
-  // Actualizar labels BK (seguimiento)
-  const infBk = document.getElementById('inf-bk');
-  if (infBk) {
-    const opts = {
-      si:     l === 'es' ? 'Sí'       : 'Sí',
-      unpoco: l === 'es' ? 'Un poco'  : 'Una mica',
-      no:     'No'
-    };
-    Array.from(infBk.options).forEach(o => {
-      if (opts[o.value]) o.text = opts[o.value];
-    });
-  }
-
-  // Actualizar labels BF (motivaciones)
-  const infBf = document.getElementById('inf-bf');
-  if (infBf) {
-    const opts = {
-      personal: l === 'es' ? 'Enriquecimiento personal'          : 'Enriquiment personal',
-      laboral:  l === 'es' ? 'Motivos laborales'                 : 'Motius laborals',
-      primeros: l === 'es' ? 'Primeros estudios universitarios'  : 'Primers estudis universitaris'
-    };
-    Array.from(infBf.options).forEach(o => {
-      if (opts[o.value]) o.text = opts[o.value];
-    });
-  }
-
-  // Actualizar placeholders BL/BM
-  const infBl = document.getElementById('inf-bl');
-  const infBm = document.getElementById('inf-bm');
-  if (infBl) infBl.placeholder = l === 'es' ? 'Texto libre...' : 'Text lliure...';
-  if (infBm) infBm.placeholder = l === 'es' ? 'Texto libre...' : 'Text lliure...';
+  // BF-BM ahora son divs de solo lectura — sin selects que actualizar
 }
 
 function toggleEnl(header) {
