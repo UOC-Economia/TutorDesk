@@ -40,8 +40,10 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .field-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px solid #f0f2f5; }
 .field-row:last-child { border-bottom: none; }
 .fk { font-size: 11px; color: #8b95a1; flex-shrink: 0; max-width: 108px; line-height: 1.3; }
-.fv { font-size: 11px; font-weight: 500; color: #1a1a2e; text-align: right; max-width: 120px; word-break: break-word; line-height: 1.3; }
-.fv.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
+.fv { font-size: 11px; font-weight: 500; color: #1a1a2e; text-align: right; max-width: 120px; word-break: break-word; line-height: 1.3; cursor: pointer; border-radius: 4px; padding: 1px 3px; transition: background 0.15s; }
+.fv:not(.empty):hover { background: #e8f0fe; color: #002147; }
+.fv.empty { color: #c5cdd6; font-style: italic; font-weight: 400; cursor: default; }
+.fv.copied-flash { background: #d1fae5 !important; color: #065f46 !important; }
 .sync-btn { width: 100%; padding: 7px; border-radius: 8px; border: 1px solid #e2e6ec; background: #fff; color: #5a6578; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s; }
 .sync-btn:hover { background: #f0f2f5; }
 .sync-btn:disabled { opacity: 0.55; cursor: default; }
@@ -71,7 +73,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .idp-go-btn:hover { opacity: 0.85; }
 .idp-go-btn:disabled { opacity: 0.45; cursor: default; }
 .sync-msg { font-size: 11px; margin-top: 5px; min-height: 16px; }
-.inf-value { font-size: 11px; font-weight: 500; color: #1a1a2e; }
+.inf-value { font-size: 11px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
 .inf-value.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
 .sync-msg.ok  { color: #065f46; }
 .sync-msg.err { color: #991b1b; }
@@ -226,11 +228,11 @@ body.ct-stream .enl-copy-btn.ib-only { display: none; }
 body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
 
 /* ── INFORME ── */
-.inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 8px; }
-.inf-field { background: #f8f9fb; border: 1px solid #edf0f4; border-radius: 6px; padding: 4px 8px; display: flex; align-items: baseline; gap: 6px; }
+.inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px; }
+.inf-field { background: #fff; border: 1px solid #e2e6ec; border-radius: 7px; padding: 5px 9px; }
 .inf-field-wide { grid-column: 1 / -1; }
-.inf-field-label { font-size: 9px; color: #a0a8b4; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
-.inf-field-val { font-size: 11px; font-weight: 500; color: #1a1a2e; }
+.inf-field-label { font-size: 9px; color: #a0a8b4; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+.inf-field-val { font-size: 11px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
 .inf-field-val.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
 .inf-select { width: 100%; font-size: 12px; color: #1a1a2e; border: none; background: transparent; outline: none; cursor: pointer; padding: 2px 0; }
 .inf-select:focus { outline: none; }
@@ -562,6 +564,9 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
                 <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / Tengo estudios preuniversitarios fuera del Estado español" data-val-ca="">
                   <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios preuniversitarios fuera del Estado español</span>
                 </div>
+                <div class="enl-subopt" data-val-es="Campus / Información de interés antes de hacer la matrícula / Documentación de acceso / Documentación para acceder a un grado / y seleccionas aquí tu vía de acceso adecuada" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>…y seleccionas tu vía de acceso adecuada</span>
+                </div>
               </div>
               <div class="enl-ruta-result" id="rr-doc-inc-es" style="margin-top:5px;display:none"></div>
               <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-doc-inc-es',this)">Copiar</button></div>
@@ -595,6 +600,9 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
                 </div>
                 <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / Tinc estudis preuniversitaris fora de l'Estat espanyol">
                   <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis preuniversitaris fora de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Informació d'interès abans de fer la matrícula / Documentació d'accés / Documentació per accedir a un grau / i selecciones aquí la teva via d'accés adequada">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>…i selecciones la teva via d'accés adequada</span>
                 </div>
               </div>
               <div class="enl-ruta-result" id="rr-doc-inc-ca" style="margin-top:5px;display:none"></div>
@@ -793,6 +801,9 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
                 <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / Tengo estudios preuniversitarios fuera del Estado español" data-val-ca="">
                   <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tengo estudios preuniversitarios fuera del Estado español</span>
                 </div>
+                <div class="enl-subopt" data-val-es="Campus / Trámites / Requisitos y documentación de acceso / Para hacer un grado o máster universitario / Documentación para acceder a un grado / y seleccionas aquí tu vía de acceso adecuada" data-val-ca="">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>…y seleccionas tu vía de acceso adecuada</span>
+                </div>
               </div>
               <div class="enl-ruta-result" id="rr-doc-alum-es" style="margin-top:5px;display:none"></div>
               <div class="enl-copy-row"><button class="enl-copy-btn ib-only" onclick="copyEnlResult('rr-doc-alum-es',this)">Copiar</button></div>
@@ -826,6 +837,9 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
                 </div>
                 <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / Tinc estudis preuniversitaris fora de l'Estat espanyol">
                   <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>Tinc estudis preuniversitaris fora de l'Estat espanyol</span>
+                </div>
+                <div class="enl-subopt" data-val-es="" data-val-ca="Campus / Tràmits / Requisits i documentació d'accés / Per fer un grau o màster universitari / Documentació per accedir a un grau / i selecciones aquí la teva via d'accés adequada">
+                  <input type="checkbox" onchange="updateSuboptRuta(this)"> <span>…i selecciones la teva via d'accés adequada</span>
                 </div>
               </div>
               <div class="enl-ruta-result" id="rr-doc-alum-ca" style="margin-top:5px;display:none"></div>
@@ -1140,7 +1154,7 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
           <div class="tpl-title" id="inf-tpl-title">Informe de seguimiento</div>
           <button class="copy-btn" id="icopy-btn" onclick="doCopy('inf-ta','icopy-btn','icopy-lbl')">⎘ <span id="icopy-lbl">Copiar</span></button>
         </div>
-        <div class="tpl-body"><textarea id="inf-ta" style="min-height:320px" readonly></textarea></div>
+        <div class="tpl-body"><textarea id="inf-ta" style="min-height:420px" readonly></textarea></div>
       </div>
     </div>
 
@@ -2526,13 +2540,13 @@ document.addEventListener('click', function(e) {
 const INF_TEXTS = {
   es: {
     saludo: 'Hola:',
-    intro: (nom) => `Te paso el informe de seguimiento de ${nom}, estudiante del Grado de Economía en el que he ejercido como tutor de inicio.`,
+    intro: (nom) => `A continuación, adjunto el informe de seguimiento de ${nom}, estudiante del Grado de Economía durante el período en que he ejercido como tutor de inicio.`,
     bg: {
-      si:         'En cuanto al seguimiento de la docencia, lo ha realizado de forma correcta durante los semestres cursados en el grado, sin incidencias reseñables.',
-      irregular:  'En cuanto al seguimiento de la docencia, este ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres cursados en el grado.',
-      problemes:  'En cuanto al seguimiento de la docencia, ha presentado dificultades significativas a lo largo de los semestres cursados en el grado.'
+      si:         'Por lo que respecta al seguimiento de la docencia, lo ha realizado de forma correcta durante los semestres cursados en el grado, sin incidencias reseñables.',
+      irregular:  'Por lo que respecta al seguimiento de la docencia, este ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres cursados en el grado.',
+      problemes:  'Por lo que respecta al seguimiento de la docencia, ha presentado dificultades significativas a lo largo de los semestres cursados en el grado.'
     },
-    bh: (n) => `En cuanto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas, teniendo en cuenta su disponibilidad y ritmo de trabajo.`,
+    bh: (n) => `Respecto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas, teniendo en cuenta su disponibilidad y ritmo de trabajo.`,
     bi: {
       ambos:  'Por otro lado, ha solicitado tanto la EEP como el RAEP durante su etapa en el grado.',
       eep:    'Por otro lado, ha solicitado la EEP durante su etapa en el grado.',
@@ -2540,17 +2554,17 @@ const INF_TEXTS = {
       nada:   'Por otro lado, no ha solicitado ningún trámite de convalidación durante su etapa en el grado.'
     },
     bj: {
-      bona:       'En cuanto a la comunicación, ha mantenido un contacto fluido con el tutor y ha seguido las orientaciones indicadas en todo momento.',
-      regular:    'En cuanto a la comunicación, esta ha sido irregular, con respuestas intermitentes a los correos enviados.',
-      inexistent: 'En cuanto a la comunicación, esta ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido ninguna interacción relevante.'
+      bona:       'En lo que respecta a la comunicación, ha mantenido un contacto fluido con el tutor y ha seguido las orientaciones indicadas en todo momento.',
+      regular:    'En lo que respecta a la comunicación, esta ha sido irregular, con respuestas intermitentes a los correos enviados.',
+      inexistent: 'En lo que respecta a la comunicación, esta ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido ninguna interacción relevante.'
     },
     bk: {
       si:     'Por todo lo expuesto, considero que este estudiante requiere un seguimiento cercano por parte del tutor de seguimiento.',
       unpoco: 'Por todo lo expuesto, considero que este estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.',
       no:     'Por todo lo expuesto, considero que este estudiante no requiere ningún seguimiento especial por parte del tutor de seguimiento.'
     },
-    bl: (txt) => `En cuanto a otras casuísticas a tener en cuenta, cabe señalar que ${txt}.`,
-    bm: (txt) => `Asimismo, ${txt}.`,
+    bl: (txt) => `Cabe señalar, además, que ${txt}.`,
+    bm: (txt) => `Asimismo, ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
     bf: {
       personal: 'Finalmente, su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de nuevos conocimientos.',
       laboral:  'Finalmente, su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.',
@@ -2560,7 +2574,7 @@ const INF_TEXTS = {
   },
   ca: {
     saludo: 'Hola,',
-    intro: (nom) => `Et passo l'informe de seguiment de ${nom}, estudiant del Grau d'Economia del qual he exercit com a tutor d'inici.`,
+    intro: (nom) => `A continuació, adjunto l'informe de seguiment de ${nom}, estudiant del Grau d'Economia durant el període en què he exercit com a tutor d'inici.`,
     bg: {
       si:         'Ha seguit correctament la docència durant els semestres que porta cursats al grau, sense incidències destacables.',
       irregular:  'El seguiment de la docència ha estat irregular, amb alts i baixos en el seu rendiment al llarg dels semestres que porta cursats al grau.',
@@ -2583,8 +2597,8 @@ const INF_TEXTS = {
       unpoco: 'Per tot això, considero que l\'estudiant podria beneficiar-se d\'un seguiment puntual per part del tutor de seguiment.',
       no:     'Per tot això, considero que l\'estudiant no requereix un seguiment especial per part del tutor de seguiment.'
     },
-    bl: (txt) => `Pel que fa a altres casuístiques a tenir en compte, cal assenyalar que ${txt}.`,
-    bm: (txt) => `Així mateix, ${txt}.`,
+    bl: (txt) => `Cal assenyalar, a més, que ${txt}.`,
+    bm: (txt) => `Així mateix, ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
     bf: {
       personal: "Finalment, cal assenyalar que la seva motivació principal per cursar el grau és l'enriquiment personal i l'adquisició de coneixements.",
       laboral:  'Finalment, cal assenyalar que la seva motivació principal per cursar el grau és la millora de la seva situació laboral i el desenvolupament professional.',
@@ -2688,7 +2702,7 @@ function rebuildInforme(d) {
   const bfKey = normBF(bf);
   if (bf) parts.push('\n' + (bfKey ? t.bf[bfKey] : bf));
 
-  parts.push('\n\n' + t.despedida);
+  parts.push('\n' + t.despedida);
 
   document.getElementById('inf-ta').value = parts.join('\n');
   document.getElementById('inf-tpl-wrap').style.display = 'block';
@@ -2962,6 +2976,20 @@ function clearStudent() {
 }
 
 applyStreamToEnlaces();
+
+// ── Click-to-copy en campos del sidebar ──
+document.addEventListener('click', function(e) {
+  const fv = e.target.closest('.fv');
+  if (!fv || fv.classList.contains('empty')) return;
+  const text = fv.textContent.trim();
+  if (!text || text === '—') return;
+  navigator.clipboard.writeText(text).then(() => {
+    fv.classList.add('copied-flash');
+    const orig = fv.textContent;
+    fv.textContent = '✓';
+    setTimeout(() => { fv.classList.remove('copied-flash'); fv.textContent = orig; }, 1000);
+  });
+});
 </script>
 </body>
 </html>
