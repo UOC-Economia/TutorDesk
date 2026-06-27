@@ -1134,14 +1134,14 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
 
       <!-- Valores leídos del Sheets -->
       <div class="inf-grid" id="inf-values-grid">
-        <div class="inf-field"><div class="inf-field-label">BF · Motivaciones y Objetivos</div><div class="inf-value" id="inf-bf">—</div></div>
-        <div class="inf-field"><div class="inf-field-label">BG · Seguiment docència</div><div class="inf-value" id="inf-bg">—</div></div>
-        <div class="inf-field"><div class="inf-field-label">BH · Càrrega lectiva</div><div class="inf-value" id="inf-bh">—</div></div>
-        <div class="inf-field"><div class="inf-field-label">BI · AEP / RAEP</div><div class="inf-value" id="inf-bi">—</div></div>
-        <div class="inf-field"><div class="inf-field-label">BJ · Comunicació tutor</div><div class="inf-value" id="inf-bj">—</div></div>
-        <div class="inf-field"><div class="inf-field-label">BK · Necesita seguimiento</div><div class="inf-value" id="inf-bk">—</div></div>
-        <div class="inf-field inf-field-wide"><div class="inf-field-label">BL · Altres casuístiques</div><div class="inf-value" id="inf-bl">—</div></div>
-        <div class="inf-field inf-field-wide"><div class="inf-field-label">BM · Otros</div><div class="inf-value" id="inf-bm">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bf">Motivaciones y objetivos</div><div class="inf-value" id="inf-bf">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bg">Seguimiento de la docencia</div><div class="inf-value" id="inf-bg">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bh">Carga lectiva</div><div class="inf-value" id="inf-bh">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bi">EEP / RAEP</div><div class="inf-value" id="inf-bi">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bj">Comunicación con el tutor</div><div class="inf-value" id="inf-bj">—</div></div>
+        <div class="inf-field"><div class="inf-field-label" id="inf-lbl-bk">Necesita seguimiento</div><div class="inf-value" id="inf-bk">—</div></div>
+        <div class="inf-field inf-field-wide"><div class="inf-field-label" id="inf-lbl-bl">Otras casuísticas</div><div class="inf-value" id="inf-bl">—</div></div>
+        <div class="inf-field inf-field-wide"><div class="inf-field-label" id="inf-lbl-bm">Otros</div><div class="inf-value" id="inf-bm">—</div></div>
       </div>
 
       <div id="inf-no-data" style="font-size:12px;color:#8b95a1;padding:10px 0;display:none">
@@ -1980,6 +1980,19 @@ function applyStaticUI(){
   document.getElementById('eseg-alum').textContent = alumLbl;
   document.querySelectorAll('.enl-checklist-label').forEach(el=>{ el.textContent=checkLbl; });
   // enl-title data-es/ca handled by applyStreamToEnlaces()
+
+  // Etiquetas del grid de informe según idioma
+  const infLabels = lang === 'es'
+    ? { bf:'Motivaciones y objetivos', bg:'Seguimiento de la docencia', bh:'Carga lectiva',
+        bi:'EEP / RAEP', bj:'Comunicación con el tutor', bk:'Necesita seguimiento',
+        bl:'Otras casuísticas', bm:'Otros' }
+    : { bf:'Motivacions i objectius', bg:'Seguiment de la docència', bh:'Càrrega lectiva',
+        bi:'AEP / RAEP', bj:'Comunicació amb el tutor', bk:'Necessita seguiment',
+        bl:'Altres casuístiques', bm:'Altres' };
+  Object.keys(infLabels).forEach(k => {
+    const el = document.getElementById('inf-lbl-' + k);
+    if (el) el.textContent = infLabels[k];
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -2537,74 +2550,141 @@ document.addEventListener('click', function(e) {
 // ═══════════════════════════════════════════
 // INFORME FINAL TUTORÍA
 // ═══════════════════════════════════════════
+
+// Variantes de introducción (aleatorio)
+const INF_INTROS = {
+  es: [
+    (nom) => `A continuación te presento el informe de seguimiento de ${nom}, estudiante del Grado de Economía durante los últimos semestres.`,
+    (nom) => `Adjunto el informe de seguimiento de ${nom}, estudiante del Grado de Economía en los semestres en que he sido su tutor.`,
+    (nom) => `Te hago llegar el informe de seguimiento de ${nom}, con quien he trabajado como tutor durante los últimos semestres.`,
+    (nom) => `A continuación encontrarás el informe de seguimiento de ${nom}, estudiante del Grado de Economía durante los semestres en que he ejercido como tutor.`,
+    (nom) => `Te presento el informe de seguimiento de ${nom}, estudiante del Grado de Economía a lo largo de los últimos semestres.`
+  ],
+  ca: [
+    (nom) => `A continuació et presento l'informe de seguiment de ${nom}, estudiant del Grau d'Economia durant els darrers semestres.`,
+    (nom) => `Adjunto l'informe de seguiment de ${nom}, estudiant del Grau d'Economia en els semestres en què he estat el seu tutor.`,
+    (nom) => `Et faig arribar l'informe de seguiment de ${nom}, amb qui he treballat com a tutor durant els darrers semestres.`,
+    (nom) => `A continuació trobaràs l'informe de seguiment de ${nom}, estudiant del Grau d'Economia durant els semestres en què he exercit com a tutor.`,
+    (nom) => `Et presento l'informe de seguiment de ${nom}, estudiant del Grau d'Economia al llarg dels darrers semestres.`
+  ]
+};
+
+// Pools de conectores por campo (sin "Finalmente"/"Por último" fuera de BF)
+const INF_CONECTORS = {
+  es: {
+    bi: ['En cuanto a los trámites de convalidación,', 'Respecto a las convalidaciones,', 'En relación con los trámites de reconocimiento de créditos,'],
+    bj: ['En relación con la comunicación,', 'Por lo que respecta al contacto con el tutor,', 'En cuanto a la comunicación mantenida,'],
+    bg: ['En cuanto al seguimiento de la docencia,', 'Por lo que respecta a la dedicación académica,', 'Sobre el seguimiento de las asignaturas,'],
+    bk: ['Teniendo en cuenta todo lo anterior,', 'A la vista de lo expuesto,', 'En función de lo descrito,'],
+    bl: ['Cabe añadir que', 'Conviene mencionar también que', 'Cabe señalar, además, que'],
+    bm: ['Cabe destacar que', 'Conviene señalar que', 'Cabe mencionar que'],
+    bh: ['Sobre la carga lectiva,', 'En lo que respecta a la dedicación por semestre,', 'Respecto al número de asignaturas recomendadas,'],
+    bf: ['Finalmente,', 'Por último,']
+  },
+  ca: {
+    bi: ['Pel que fa als tràmits de convalidació,', 'Quant a les convalidacions,', 'En relació amb els tràmits de reconeixement de crèdits,'],
+    bj: ['En relació amb la comunicació,', 'Pel que fa al contacte amb el tutor,', 'Quant a la comunicació mantinguda,'],
+    bg: ['Quant al seguiment de la docència,', 'Pel que fa a la dedicació acadèmica,', 'Sobre el seguiment de les assignatures,'],
+    bk: ['Tenint en compte tot l\'anterior,', 'A la vista del que s\'ha exposat,', 'En funció del que s\'ha descrit,'],
+    bl: ['Cal afegir que', 'Convé esmentar també que', 'Cal assenyalar, a més, que'],
+    bm: ['Cal destacar que', 'Convé assenyalar que', 'Cal esmentar que'],
+    bh: ['Sobre la càrrega lectiva,', 'Pel que fa a la dedicació per semestre,', 'Quant al nombre d\'assignatures recomanades,'],
+    bf: ['Finalment,', 'Per últim,']
+  }
+};
+
+// Selecciona conectores sin repetición para los campos presentes
+function pickConectors(fields, l) {
+  // Recopilar todos los conectores disponibles para los campos presentes (excepto bf que siempre tiene el suyo)
+  const nonBfFields = fields.filter(f => f !== 'bf');
+  // Construir lista de candidatos: para cada campo, un conector elegido al azar, sin repetir el string
+  const used = new Set();
+  const result = {};
+  // bf siempre elige entre sus 2 opciones
+  if (fields.includes('bf')) {
+    const pool = INF_CONECTORS[l].bf;
+    result['bf'] = pool[Math.floor(Math.random() * pool.length)];
+  }
+  // Para el resto, barajamos y asignamos evitando repetición de texto
+  const shuffledFields = nonBfFields.slice().sort(() => Math.random() - 0.5);
+  shuffledFields.forEach(f => {
+    const pool = INF_CONECTORS[l][f] || [];
+    const available = pool.filter(c => !used.has(c));
+    const chosen = available.length
+      ? available[Math.floor(Math.random() * available.length)]
+      : pool[Math.floor(Math.random() * pool.length)];
+    result[f] = chosen;
+    used.add(chosen);
+  });
+  return result;
+}
+
 const INF_TEXTS = {
   es: {
     saludo: 'Hola:',
-    intro: (nom) => `A continuación, adjunto el informe de seguimiento de ${nom}, estudiante del Grado de Economía durante el período en que he ejercido como tutor de inicio.`,
     bg: {
-      si:         'Por lo que respecta al seguimiento de la docencia, lo ha realizado de forma correcta durante los semestres cursados en el grado, sin incidencias reseñables.',
-      irregular:  'Por lo que respecta al seguimiento de la docencia, este ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres cursados en el grado.',
-      problemes:  'Por lo que respecta al seguimiento de la docencia, ha presentado dificultades significativas a lo largo de los semestres cursados en el grado.'
+      si:        (c) => `${c} lo ha realizado de forma correcta durante los semestres cursados en el grado, sin incidencias reseñables.`,
+      irregular: (c) => `${c} este ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres cursados en el grado.`,
+      problemes: (c) => `${c} ha presentado dificultades significativas a lo largo de los semestres cursados en el grado.`
     },
-    bh: (n) => `Respecto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas, teniendo en cuenta su disponibilidad y ritmo de trabajo.`,
+    bh: (c, n) => `${c} le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas, teniendo en cuenta su disponibilidad y ritmo de trabajo.`,
     bi: {
-      ambos:  'Por otro lado, ha solicitado tanto la EEP como el RAEP durante su etapa en el grado.',
-      eep:    'Por otro lado, ha solicitado la EEP durante su etapa en el grado.',
-      raep:   'Por otro lado, ha solicitado el RAEP durante su etapa en el grado.',
-      nada:   'Por otro lado, no ha solicitado ningún trámite de convalidación durante su etapa en el grado.'
+      ambos:  (c) => `${c} ha solicitado tanto la EEP como el RAEP durante su etapa en el grado.`,
+      eep:    (c) => `${c} ha solicitado la EEP durante su etapa en el grado.`,
+      raep:   (c) => `${c} ha solicitado el RAEP durante su etapa en el grado.`,
+      nada:   (c) => `${c} no ha solicitado ningún trámite de convalidación durante su etapa en el grado.`
     },
     bj: {
-      bona:       'En lo que respecta a la comunicación, ha mantenido un contacto fluido con el tutor y ha seguido las orientaciones indicadas en todo momento.',
-      regular:    'En lo que respecta a la comunicación, esta ha sido irregular, con respuestas intermitentes a los correos enviados.',
-      inexistent: 'En lo que respecta a la comunicación, esta ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido ninguna interacción relevante.'
+      bona:       (c) => `${c} ha mantenido un contacto fluido con el tutor y ha seguido las orientaciones indicadas en todo momento.`,
+      regular:    (c) => `${c} esta ha sido irregular, con respuestas intermitentes a los correos enviados.`,
+      inexistent: (c) => `${c} esta ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido ninguna interacción relevante.`
     },
     bk: {
-      si:     'Por todo lo expuesto, considero que este estudiante requiere un seguimiento cercano por parte del tutor de seguimiento.',
-      unpoco: 'Por todo lo expuesto, considero que este estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.',
-      no:     'Por todo lo expuesto, considero que este estudiante no requiere ningún seguimiento especial por parte del tutor de seguimiento.'
+      si:     (c) => `${c} considero que este estudiante requiere un seguimiento cercano por parte del tutor de seguimiento.`,
+      unpoco: (c) => `${c} considero que este estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.`,
+      no:     (c) => `${c} considero que este estudiante no requiere ningún seguimiento especial por parte del tutor de seguimiento.`
     },
-    bl: (txt) => `Cabe señalar, además, que ${txt}.`,
-    bm: (txt) => `Asimismo, ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
+    bl: (c, txt) => `${c} ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
+    bm: (c, txt) => `${c} ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
     bf: {
-      personal: 'Finalmente, su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de nuevos conocimientos.',
-      laboral:  'Finalmente, su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.',
-      primeros: 'Finalmente, cabe destacar que accede por primera vez a estudios universitarios, lo que ha supuesto un reto adicional en su proceso de adaptación al grado.'
+      personal: (c) => `${c} su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de nuevos conocimientos.`,
+      laboral:  (c) => `${c} su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.`,
+      primeros: (c) => `${c} cabe destacar que accede por primera vez a estudios universitarios, lo que ha supuesto un reto adicional en su proceso de adaptación al grado.`
     },
-    despedida: 'Quedo a tu disposición para cualquier consulta.\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya'
+    despedida: 'Quedo a tu disposición para cualquier consulta.\n\nUn saludo,\nÓscar'
   },
   ca: {
     saludo: 'Hola,',
-    intro: (nom) => `A continuació, adjunto l'informe de seguiment de ${nom}, estudiant del Grau d'Economia durant el període en què he exercit com a tutor d'inici.`,
     bg: {
-      si:         'Ha seguit correctament la docència durant els semestres que porta cursats al grau, sense incidències destacables.',
-      irregular:  'El seguiment de la docència ha estat irregular, amb alts i baixos en el seu rendiment al llarg dels semestres que porta cursats al grau.',
-      problemes:  'Ha presentat dificultats significatives en el seguiment de la docència durant els semestres que porta cursats al grau.'
+      si:        (c) => `${c} ha seguit correctament la docència durant els semestres que porta cursats al grau, sense incidències destacables.`,
+      irregular: (c) => `${c} el seguiment de la docència ha estat irregular, amb alts i baixos en el seu rendiment al llarg dels semestres que porta cursats al grau.`,
+      problemes: (c) => `${c} ha presentat dificultats significatives en el seguiment de la docència durant els semestres que porta cursats al grau.`
     },
-    bh: (n) => `Pel que fa a la càrrega lectiva, li recomano matricular-se de ${n} assignatura${n==='1'?'':'s'} per semestre en les properes matrícules.`,
+    bh: (c, n) => `${c} li recomano matricular-se de ${n} assignatura${n==='1'?'':'s'} per semestre en les properes matrícules, tenint en compte la seva disponibilitat i ritme de treball.`,
     bi: {
-      ambos:  "Així mateix, ha sol·licitat tant l'AEP com el RAEP durant els semestres que porta estudiant al grau.",
-      eep:    "Així mateix, ha sol·licitat l'AEP durant els semestres que porta estudiant al grau.",
-      raep:   'Així mateix, ha sol·licitat el RAEP durant els semestres que porta estudiant al grau.',
-      nada:   "Pel que fa als tràmits de convalidació, no n'ha sol·licitat cap durant els semestres que porta estudiant al grau."
+      ambos:  (c) => `${c} ha sol·licitat tant l'AEP com el RAEP durant els semestres que porta estudiant al grau.`,
+      eep:    (c) => `${c} ha sol·licitat l'AEP durant els semestres que porta estudiant al grau.`,
+      raep:   (c) => `${c} ha sol·licitat el RAEP durant els semestres que porta estudiant al grau.`,
+      nada:   (c) => `${c} no ha sol·licitat cap tràmit de convalidació durant els semestres que porta estudiant al grau.`
     },
     bj: {
-      bona:       "D'altra banda, la comunicació amb el tutor ha estat bona i ha seguit les directrius indicades en tot moment.",
-      regular:    "D'altra banda, la comunicació amb el tutor ha estat irregular, amb respostes intermitents als correus enviats.",
-      inexistent: "D'altra banda, la comunicació amb el tutor ha estat pràcticament inexistent; no ha respost als correus enviats ni s'ha produït una interacció rellevant."
+      bona:       (c) => `${c} la comunicació amb el tutor ha estat bona i ha seguit les directrius indicades en tot moment.`,
+      regular:    (c) => `${c} la comunicació amb el tutor ha estat irregular, amb respostes intermitents als correus enviats.`,
+      inexistent: (c) => `${c} la comunicació amb el tutor ha estat pràcticament inexistent; no ha respost als correus enviats ni s'ha produït cap interacció rellevant.`
     },
     bk: {
-      si:     'Per tot això, considero que l\'estudiant necessita un seguiment proper per part del tutor de seguiment.',
-      unpoco: 'Per tot això, considero que l\'estudiant podria beneficiar-se d\'un seguiment puntual per part del tutor de seguiment.',
-      no:     'Per tot això, considero que l\'estudiant no requereix un seguiment especial per part del tutor de seguiment.'
+      si:     (c) => `${c} considero que l'estudiant necessita un seguiment proper per part del tutor de seguiment.`,
+      unpoco: (c) => `${c} considero que l'estudiant podria beneficiar-se d'un seguiment puntual per part del tutor de seguiment.`,
+      no:     (c) => `${c} considero que l'estudiant no requereix un seguiment especial per part del tutor de seguiment.`
     },
-    bl: (txt) => `Cal assenyalar, a més, que ${txt}.`,
-    bm: (txt) => `Així mateix, ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
+    bl: (c, txt) => `${c} ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
+    bm: (c, txt) => `${c} ${txt.charAt(0).toLowerCase() + txt.slice(1)}.`,
     bf: {
-      personal: "Finalment, cal assenyalar que la seva motivació principal per cursar el grau és l'enriquiment personal i l'adquisició de coneixements.",
-      laboral:  'Finalment, cal assenyalar que la seva motivació principal per cursar el grau és la millora de la seva situació laboral i el desenvolupament professional.',
-      primeros: "Finalment, cal assenyalar que accedeix per primera vegada a estudis universitaris, la qual cosa ha suposat un repte addicional en el seu procés d'adaptació al grau."
+      personal: (c) => `${c} la seva motivació principal per cursar el grau és l'enriquiment personal i l'adquisició de coneixements.`,
+      laboral:  (c) => `${c} la seva motivació principal per cursar el grau és la millora de la seva situació laboral i el desenvolupament professional.`,
+      primeros: (c) => `${c} cal assenyalar que accedeix per primera vegada a estudis universitaris, la qual cosa ha suposat un repte addicional en el seu procés d'adaptació al grau.`
     },
-    despedida: "Quedo a la teva disposició per a qualsevol consulta.\n\nSalutacions,\nÓscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya"
+    despedida: "Quedo a la teva disposició per a qualsevol consulta.\n\nSalutacions,\nÒscar"
   }
 };
 
@@ -2628,15 +2708,15 @@ function rebuildInforme(d) {
     return;
   }
 
-  // Normalizar claves del Sheets a las claves internas del diccionario
-  // Acepta tanto la clave interna como el texto completo del Sheets (cualquier idioma)
+  // ── Normalitzadors ──
   function normBG(v) {
     const map = {
-      'si':'si','sí':'si','cap problema':'si','sin problemas':'si','sin problema':'si',
+      'si':'si','sí':'si','s\u00ed':'si',
+      'cap problema':'si','sin problemas':'si','sin problema':'si','sense problema':'si',
       'irregular':'irregular',
-      'problemes':'problemes','problemas':'problemes','problemes':'problemes'
+      'problemes':'problemes','problemas':'problemes','amb problemes':'problemes','con problemas':'problemes'
     };
-    return map[v.toLowerCase()] || null;
+    return map[v.toLowerCase().trim()] || null;
   }
   function normBI(v) {
     const map = {
@@ -2646,61 +2726,88 @@ function rebuildInforme(d) {
       'eep':'eep','eep solicitado':'eep','aep sol·licitat':'eep','aep':'eep',
       'aep solicitat':'eep','eep solicitat':'eep',
       'raep':'raep','raep solicitado':'raep','raep sol·licitat':'raep','raep solicitat':'raep',
-      'nada':'nada','res':'nada','ninguno':'nada','cap':'nada'
+      'nada':'nada','res':'nada','ninguno':'nada','cap':'nada','cap tràmit':'nada'
     };
-    return map[v.toLowerCase()] || null;
+    return map[v.toLowerCase().trim()] || null;
   }
   function normBJ(v) {
     const map = {
       'bona':'bona','buena':'bona','bona, segueix directrius':'bona',
-      'buena, sigue directrices':'bona','bona segueix directrius':'bona',
+      'buena, sigue directrices':'bona','bona segueix directrius':'bona','bona comunicació':'bona',
       'regular':'regular',
-      'inexistent':'inexistent','inexistente':'inexistent','inexistent':'inexistent'
+      'inexistent':'inexistent','inexistente':'inexistent','inexistente':'inexistent'
     };
-    return map[v.toLowerCase()] || null;
+    return map[v.toLowerCase().trim()] || null;
   }
   function normBK(v) {
     const map = {
-      'si':'si','sí':'si','yes':'si',
+      'si':'si','sí':'si','s\u00ed':'si','yes':'si',
       'unpoco':'unpoco','un poco':'unpoco','una mica':'unpoco','poco':'unpoco','poc':'unpoco',
       'no':'no'
     };
-    return map[v.toLowerCase()] || null;
+    return map[v.toLowerCase().trim()] || null;
   }
   function normBF(v) {
     const map = {
       'personal':'personal','enriquecimiento personal':'personal','enriquiment personal':'personal',
       'laboral':'laboral','motivos laborales':'laboral','motius laborals':'laboral',
       'primeros':'primeros','primeros estudios universitarios':'primeros',
-      'primers estudis universitaris':'primeros'
+      'primers estudis universitaris':'primeros','primera vegada':'primeros','primera vez':'primeros'
     };
-    return map[v.toLowerCase()] || null;
+    return map[v.toLowerCase().trim()] || null;
   }
 
+  // Determinar qué campos están presentes para el sorteo de conectores
+  const presentFields = [];
+  if (bi) presentFields.push('bi');
+  if (bj) presentFields.push('bj');
+  if (bg) presentFields.push('bg');
+  if (bk) presentFields.push('bk');
+  if (bl) presentFields.push('bl');
+  if (bm) presentFields.push('bm');
+  if (bh) presentFields.push('bh');
+  if (bf) presentFields.push('bf');
+
+  const C = pickConectors(presentFields, lang);
+
+  // Intro aleatoria
+  const introPool = INF_INTROS[lang];
+  const intro = introPool[Math.floor(Math.random() * introPool.length)](nom);
+
+  // ── Construir partes en el orden: intro, BI, BJ, BG, BK, BL, BH, BM, BF ──
   const parts = [];
   parts.push(t.saludo);
   parts.push('');
-  parts.push(t.intro(nom));
+  parts.push(intro);
 
-  const bgKey = normBG(bg);
-  if (bg) parts.push('\n' + (bgKey ? t.bg[bgKey] : bg));
-
-  if (bh) parts.push('\n' + t.bh(bh));
-
+  // BI — EEP/RAEP
   const biKey = normBI(bi);
-  if (bi) parts.push('\n' + (biKey ? t.bi[biKey] : bi));
+  if (bi) parts.push('\n' + (biKey ? t.bi[biKey](C.bi) : bi));
 
+  // BJ — Comunicació
   const bjKey = normBJ(bj);
-  if (bj) parts.push('\n' + (bjKey ? t.bj[bjKey] : bj));
+  if (bj) parts.push('\n' + (bjKey ? t.bj[bjKey](C.bj) : bj));
 
+  // BG — Seguiment docència
+  const bgKey = normBG(bg);
+  if (bg) parts.push('\n' + (bgKey ? t.bg[bgKey](C.bg) : bg));
+
+  // BK — Necesita seguimiento
   const bkKey = normBK(bk);
-  if (bk) parts.push('\n' + (bkKey ? t.bk[bkKey] : bk));
+  if (bk) parts.push('\n' + (bkKey ? t.bk[bkKey](C.bk) : bk));
 
-  if (bl) parts.push('\n' + t.bl(bl));
-  if (bm) parts.push('\n' + t.bm(bm));
+  // BL — Altres casuístiques
+  if (bl) parts.push('\n' + t.bl(C.bl, bl));
 
+  // BH — Carga lectiva
+  if (bh) parts.push('\n' + t.bh(C.bh, bh));
+
+  // BM — Otros
+  if (bm) parts.push('\n' + t.bm(C.bm, bm));
+
+  // BF — Motivaciones (siempre al final)
   const bfKey = normBF(bf);
-  if (bf) parts.push('\n' + (bfKey ? t.bf[bfKey] : bf));
+  if (bf) parts.push('\n' + (bfKey ? t.bf[bfKey](C.bf) : bf));
 
   parts.push('\n' + t.despedida);
 
