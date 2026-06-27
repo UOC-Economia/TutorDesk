@@ -2711,10 +2711,14 @@ function rebuildInforme(d) {
   // ── Normalitzadors ──
   function normBG(v) {
     const map = {
+      // Valores actuales del desplegable del Sheets
+      'ningún problema':'si','ningun problema':'si',
+      'irregular':'irregular',
+      'problemas':'problemes','problemes':'problemes',
+      // Valores legacy por compatibilidad
       'si':'si','sí':'si','s\u00ed':'si',
       'cap problema':'si','sin problemas':'si','sin problema':'si','sense problema':'si',
-      'irregular':'irregular',
-      'problemes':'problemes','problemas':'problemes','amb problemes':'problemes','con problemas':'problemes'
+      'amb problemes':'problemes','con problemas':'problemes'
     };
     return map[v.toLowerCase().trim()] || null;
   }
