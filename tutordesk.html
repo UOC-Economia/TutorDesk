@@ -2843,10 +2843,8 @@ renderSits();
 renderAsigList();
 switchMat(1, document.getElementById('mb1'));
 document.getElementById('stu-name').textContent = STATIC[lang]['stu-none'];
-applyStreamToEnlaces();
-</script>
-</body>
-</html>function populateSidebar(d) {
+
+function populateSidebar(d) {
   // Campos D–W
   const fieldIds = ['d','e','f','g','h','i','o','p','q','r','s','t','u','v','w'];
   fieldIds.forEach(id => {
@@ -2891,4 +2889,38 @@ applyStreamToEnlaces();
   rebuildInforme(d);
 }
 
+function clearStudent() {
+  const fieldIds = ['d','e','f','g','h','i','o','p','q','r','s','t','u','v','w'];
+  fieldIds.forEach(id => {
+    const el = document.getElementById('fv-' + id);
+    if (!el) return;
+    el.textContent = '—';
+    el.classList.add('empty');
+  });
 
+  document.getElementById('stu-name').textContent = STATIC[lang]['stu-none'];
+  document.getElementById('stu-idp').textContent  = 'IDP: —';
+  document.getElementById('stu-av').textContent   = '—';
+  document.getElementById('stu-badge').innerHTML  = '';
+
+  // Limpiar informe
+  const infCols = ['bf','bg','bh','bi','bj','bk','bl','bm'];
+  infCols.forEach(col => {
+    const el = document.getElementById('inf-' + col);
+    if (!el) return;
+    el.textContent = '—';
+    el.classList.add('empty');
+  });
+  document.getElementById('inf-tpl-wrap').style.display = 'none';
+
+  const search = document.getElementById('stu-search');
+  if (search) search.value = '';
+  document.getElementById('sync-msg').textContent = '';
+  document.getElementById('sync-msg').className   = 'sync-msg';
+  document.getElementById('btn-sync-clear').style.display = 'none';
+}
+
+applyStreamToEnlaces();
+</script>
+</body>
+</html>
