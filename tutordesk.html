@@ -143,6 +143,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .asig-clear:hover { color: #dc2626; }
 .asig-filter-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 7px; }
 .asig-filter { padding: 2px 8px; border-radius: 20px; border: 1px solid #e2e6ec; background: transparent; font-size: 10px; color: #5a6578; cursor: pointer; transition: all 0.15s; }
+.asig-filter-mat { border-style: dashed; border-color: #8b5cf6; color: #6d28d9; }
+.asig-filter-mat.active { background: #ede9fe; border-color: #6d28d9; color: #4c1d95; border-style: solid; }
 .asig-filter.active { background: #002147; color: #fff; border-color: #002147; }
 .asig-group-label { font-size: 10px; font-weight: 600; color: #8b95a1; letter-spacing: 0.07em; text-transform: uppercase; padding: 5px 0 3px; }
 .asig-list { display: flex; flex-direction: column; gap: 1px; max-height: 210px; overflow-y: auto; }
@@ -395,13 +397,13 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
           <button class="asig-clear" onclick="clearAsig()" id="asig-clear-btn">Limpiar selección</button>
         </div>
         <div class="asig-filter-row">
-          <button class="asig-filter active" onclick="setAsigFilter('all',this)" id="af-all">Todas</button>
-          <button class="asig-filter" onclick="setAsigFilter('sep',this)" id="af-sep">Septiembre</button>
-          <button class="asig-filter" onclick="setAsigFilter('feb',this)" id="af-feb">Febrero</button>
-          <button class="asig-filter" onclick="setAsigFilter('tots',this)" id="af-tots">Ambos</button>
           <button class="asig-filter" onclick="setAsigFilter('bas',this)" id="af-bas">Básicas</button>
           <button class="asig-filter" onclick="setAsigFilter('obl',this)" id="af-obl">Obligatorias</button>
           <button class="asig-filter" onclick="setAsigFilter('opt',this)" id="af-opt">Optativas</button>
+          <button class="asig-filter" onclick="setAsigFilter('sep',this)" id="af-sep">Septiembre</button>
+          <button class="asig-filter" onclick="setAsigFilter('feb',this)" id="af-feb">Febrero</button>
+          <button class="asig-filter active" onclick="setAsigFilter('all',this)" id="af-all">Todas</button>
+          <button class="asig-filter asig-filter-mat" onclick="toggleMatFilter(this)" id="af-mat">Matemáticas</button>
         </div>
         <div class="asig-list" id="asig-list"></div>
         <div class="asig-preview" id="asig-preview"></div>
@@ -414,16 +416,19 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
             <div class="tpl-title" id="tpl-title">Selecciona una situación</div>
             <div class="tpl-badge" id="tpl-badge"></div>
           </div>
-          <button class="copy-btn" id="copy-btn" onclick="doCopy('tpl-ta','copy-btn','copy-lbl')">
-            ⎘ <span id="copy-lbl">Copiar</span>
-          </button>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <button class="copy-btn" id="copy-btn" onclick="doCopy('tpl-ta','copy-btn','copy-lbl')">
+              ⎘ <span id="copy-lbl">Copiar</span>
+            </button>
+            <button onclick="clearTutAll()" title="Limpiar todas las selecciones" style="font-size:10px;color:#8b95a1;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px">↺ Limpiar todo</button>
+          </div>
         </div>
         <div class="var-info" id="var-info">
           <span class="var-auto" id="var-auto"></span>
           <span class="var-manual" id="var-manual"></span>
         </div>
         <div class="tpl-body">
-          <textarea id="tpl-ta" placeholder="Selecciona una situación para ver la plantilla..."></textarea>
+          <textarea id="tpl-ta" style="min-height:520px" placeholder="Selecciona una situación para ver la plantilla..."></textarea>
         </div>
       </div>
     </div>
@@ -1348,7 +1353,7 @@ const SITS = {
       {id:'recom',       icon:'✓', tone:'good', l:'Propuesta recomendada',    s:'Sin observaciones',       asig:true,  conv:true},
       {id:'mod-prop',    icon:'✎', tone:'warn', l:'Propuesta modificada',     s:'Cambios solicitados',     asig:true,  conv:false},
       {id:'mod-mat',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Tras formalización',      asig:true,  conv:false},
-      {id:'inicio',      icon:'✉', tone:'neu',  l:'Inicio de semestre',       s:'Primer contacto',         asig:false, conv:false},
+      {id:'__placeholder__', icon:'', tone:'neu', l:'', s:'',                 asig:false, conv:false},
     ],
     2:[
       {id:'bienvenida-b', icon:'◎', tone:'good', l:'Bienvenida',               s:'Buenas notas',            tipo:'bienvenida2', asig:false, conv:false},
@@ -1377,7 +1382,7 @@ const SITS = {
       {id:'recom',       icon:'✓', tone:'good', l:'Proposta recomanada',      s:'Sense observacions',      asig:true,  conv:true},
       {id:'mod-prop',    icon:'✎', tone:'warn', l:'Proposta modificada',      s:'Canvis sol·licitats',     asig:true,  conv:false},
       {id:'mod-mat',     icon:'✎', tone:'warn', l:'Matrícula modificada',     s:'Després de formalitzar',  asig:true,  conv:false},
-      {id:'inicio',      icon:'✉', tone:'neu',  l:'Inici de semestre',        s:'Primer contacte',         asig:false, conv:false},
+      {id:'__placeholder__', icon:'', tone:'neu', l:'', s:'',                 asig:false, conv:false},
     ],
     2:[
       {id:'bienvenida-b', icon:'◎', tone:'good', l:'Benvinguda',               s:'Bones notes',             tipo:'bienvenida2', asig:false, conv:false},
@@ -1622,27 +1627,23 @@ Universitat Oberta de Catalunya`
 
 Esta propuesta de matrícula me parece mucho más acertada, una vez has introducido los cambios indicados en la anterior tutorización.
 
-Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, tras realizarla, cuentas con 10 días hábiles para enviar toda la documentación de acceso. En cuanto la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si, por el contrario, es necesario corregir algún documento.
 
 Si necesitas alguna aclaración o asistencia durante el proceso de matriculación, no dudes en escribirme.
 
 Un saludo,
-Óscar Blázquez
-Tutor de inicio — Grado de Economía
-Universitat Oberta de Catalunya`,
+Óscar`,
     ca: (nom) =>
 `Bon dia, ${nom},
 
 Aquesta proposta de matrícula em sembla molt més encertada, un cop has introduït els canvis indicats en la tutorització anterior.
 
-Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, després de fer-la, disposes de 10 dies hàbils per enviar tota la documentació d'accés. En el moment que la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si, per contra, cal corregir algun document.
 
 Si necessites alguna aclariment o assistència durant el procés de matriculació, no dubtis a escriure'm.
 
 Salutacions,
-Òscar Blázquez
-Tutor d'inici — Grau d'Economia
-Universitat Oberta de Catalunya`
+Òscar`
   },
 
   // ── 1ª mat · Matrícula modificada ──
@@ -1653,27 +1654,23 @@ Universitat Oberta de Catalunya`
 
 En relación con tu nueva matrícula, esta me parece mucho más acertada, una vez se ha modificado siguiendo las recomendaciones que comentamos.
 
-Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+Te recuerdo que, tras realizarla, cuentas con 10 días hábiles para enviar toda la documentación de acceso. En cuanto la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si, por el contrario, es necesario corregir algún documento.
 
 Si necesitas alguna aclaración, no dudes en ponerte en contacto conmigo.
 
 Un saludo,
-Óscar Blázquez
-Tutor de inicio — Grado de Economía
-Universitat Oberta de Catalunya`,
+Óscar`,
     ca: (nom) =>
 `Bon dia, ${nom},
 
 En relació amb la teva nova matrícula, aquesta em sembla molt més encertada, un cop s'ha modificat seguint les recomanacions que vam comentar.
 
-Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+Et recordo que, després de fer-la, disposes de 10 dies hàbils per enviar tota la documentació d'accés. En el moment que la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si, per contra, cal corregir algun document.
 
 Si necessites alguna aclariment, no dubtis a posar-te en contacte amb mi.
 
 Salutacions,
-Òscar Blázquez
-Tutor d'inici — Grau d'Economia
-Universitat Oberta de Catalunya`
+Òscar`
   },
 
   // ── 2ª mat · Matrícula modificada ──
@@ -1738,27 +1735,23 @@ Universitat Oberta de Catalunya`
 
 Esta propuesta de matrícula me parece mucho más acertada, una vez has introducido los cambios indicados en la anterior tutorización.
 
-Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, una vez formalizada la matrícula, cuentas con 10 días hábiles para enviar toda la documentación de acceso. Una vez la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si necesitas realizar algún cambio.
+Por lo tanto, te invito a que formalices la matrícula sobre la base de esta nueva propuesta. Te recuerdo que, tras realizarla, cuentas con 10 días hábiles para enviar toda la documentación de acceso. En cuanto la revisen y la validen (lo que puede tardar varios días), recibirás un correo indicando si todo es correcto o si, por el contrario, es necesario corregir algún documento.
 
 Si necesitas alguna aclaración o asistencia durante el proceso de matriculación, no dudes en escribirme.
 
 Un saludo,
-Óscar Blázquez
-Tutor de inicio — Grado de Economía
-Universitat Oberta de Catalunya`,
+Óscar`,
     ca: (nom) =>
 `Bon dia, ${nom},
 
 Aquesta proposta de matrícula em sembla molt més encertada, un cop has introduït els canvis indicats en la tutorització anterior.
 
-Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, un cop formalitzada la matrícula, disposes de 10 dies hàbils per enviar tota la documentació d'accés. Un cop la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si necessites fer algun canvi.
+Per tant, t'invito a que formalitzis la matrícula sobre la base d'aquesta nova proposta. Et recordo que, després de fer-la, disposes de 10 dies hàbils per enviar tota la documentació d'accés. En el moment que la revisin i la validin (cosa que pot trigar diversos dies), rebràs un correu indicant si tot és correcte o si, per contra, cal corregir algun document.
 
 Si necessites alguna aclariment o assistència durant el procés de matriculació, no dubtis a escriure'm.
 
 Salutacions,
-Òscar Blázquez
-Tutor d'inici — Grau d'Economia
-Universitat Oberta de Catalunya`
+Òscar`
   }
 
 };
@@ -1767,6 +1760,7 @@ Universitat Oberta de Catalunya`
 // ═══════════════════════════════════════════
 let lang = 'es', stream = 'IB', curMat = 1, curSit = null;
 let selectedAsig = new Set(), asigFilter = 'all', asigPanelOpen = false;
+let matSelected = false; // opción especial Matemáticas
 
 // ── Estado compositor 2ª matrícula ──
 let mat2Bienvenida = null;
@@ -1789,7 +1783,7 @@ const MAT2_BLOQUES = {
       'no-recom2': () =>
         `En relación con tu propuesta de matrícula, me parece adecuado matricularte de [MAX_ASIG] asignaturas. No obstante, no te recomiendo matricular la asignatura de [ASIG_NO_RECOM] y sí centrarte en finalizar otras asignaturas básicas como, por ejemplo, [ASIG_ALTERNATIVA].\n\nPor lo tanto, te invito a que formalices la matrícula teniendo en cuenta mis sugerencias.`
     },
-    despedida: `Si necesitas alguna aclaración adicional, no dudes en escribirme nuevamente.\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya`
+    despedida: `Si necesitas alguna aclaración adicional, no dudes en escribirme nuevamente.\n\nUn saludo,\nÓscar`
   },
   ca: {
     bienvenida: {
@@ -1805,13 +1799,22 @@ const MAT2_BLOQUES = {
       'no-recom2': () =>
         `En relació amb la teva proposta de matrícula, em sembla adequat matricular-te de [MAX_ASIG] assignatures. No obstant això, no et recomano matricular l'assignatura de [ASIG_NO_RECOM] i sí centrar-te a finalitzar altres assignatures bàsiques com, per exemple, [ASIG_ALTERNATIVA].\n\nPer tant, t'invito a que formalitzis la matrícula tenint en compte les meves suggerències.`
     },
-    despedida: `Si necessites alguna aclariment addicional, no dubtis a escriure'm.\n\nSalutacions,\nÒscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya`
+    despedida: `Si necessites alguna aclariment addicional, no dubtis a escriure'm.\n\nSalutacions,\nÒscar`
   }
 };
 
 
 function getNom()  { const el=document.getElementById('fv-e'); return (el&&el.textContent!=='—')?el.textContent:'[NOM]'; }
-function getHores(){ const el=document.getElementById('fv-s'); return (el&&el.textContent!=='—')?el.textContent:'[HORES]'; }
+function getHores(){
+  const el=document.getElementById('fv-s');
+  if(!el||el.textContent==='—') return '[HORES]';
+  const raw = el.textContent.trim();
+  // Normalizar "10 o menys" / "10 o menos" según idioma
+  if(raw.toLowerCase().replace(/\s+/g,' ').startsWith('10 o men')){
+    return lang==='ca' ? '10 o menys hores' : '10 o menos horas';
+  }
+  return raw;
+}
 function getAsigName(a){ return lang==='ca'?a.nc:a.n; }
 
 // Tabla asignaturas máximas 1ª matrícula
@@ -1857,6 +1860,9 @@ function getMaxAsig() {
   // Intentar parsear — los valores pueden ser "20h", "20-30h", "20", etc.
   const parseH = str => {
     if(!str || str==='—') return null;
+    // Casos especiales: "10 o menys", "10 o menos", etc. → tratar como 10
+    const especial = str.toLowerCase().replace(/\s+/g,' ').trim();
+    if(especial.startsWith('10 o men')) return 10;
     // Si es un rango "20-30h", tomar el extremo inferior
     const range = str.match(/^(\d+)\s*[-–]\s*\d+/);
     if(range) return parseInt(range[1]);
@@ -1872,8 +1878,21 @@ function getMaxAsig() {
 }
 
 function buildAsigText(){
-  if(!selectedAsig.size) return lang==='es'?'· [Selecciona las asignaturas con el botón de arriba]':'· [Selecciona les assignatures amb el botó de dalt]';
-  return Array.from(selectedAsig).map(i=>'· '+getAsigName(ASIGNATURAS[i])).join('\n');
+  const lines = [];
+  if(matSelected){
+    if(lang==='es'){
+      lines.push('· Iniciación a las matemáticas o Fundamentos de matemáticas (si tu nivel de matemáticas es igual o superior al de bachillerato, te recomiendo Fundamentos de matemáticas; pero si deseas repasar los conceptos de esta materia que se imparten en bachillerato o tu base no es muy sólida, entonces te recomiendo comenzar primero con la asignatura de Iniciación a las matemáticas)');
+    } else {
+      lines.push('· Iniciació a les matemàtiques o Fonaments de matemàtiques (si el teu nivell de matemàtiques és igual o superior al de batxillerat, et recomano Fonaments de matemàtiques; però si desitges repassar els conceptes d\'aquesta matèria que s\'imparteixen a batxillerat o la teva base no és molt sòlida, et recomano que comencis primer amb l\'assignatura d\'Iniciació a les matemàtiques)');
+    }
+  }
+  if(selectedAsig.size){
+    Array.from(selectedAsig).forEach(i => lines.push('· '+getAsigName(ASIGNATURAS[i])));
+  }
+  if(!lines.length){
+    return lang==='es'?'· [Selecciona las asignaturas con el botón de arriba]':'· [Selecciona les assignatures amb el botó de dalt]';
+  }
+  return lines.join('\n');
 }
 function getCFGS(){ return getCFGSKey(); }
 function isChkCFGS()  { return document.getElementById('chk-cfgs').checked; }
@@ -2012,6 +2031,10 @@ function renderSits(){
 
   // En 2ª matrícula, marcar active tanto la bienvenida como la propuesta seleccionadas
   document.getElementById('sit-grid').innerHTML=sits.map((s,i)=>{
+    // Placeholder: celda vacía reservada para futuras opciones
+    if(s.id==='__placeholder__'){
+      return `<div class="sit-btn" style="visibility:hidden;pointer-events:none"></div>`;
+    }
     let isActive=false;
     if(curMat===2){
       isActive=(s.id===mat2Bienvenida)||(s.id===mat2Propuesta)||(curSit===i&&s.tipo==='ind2');
@@ -2229,15 +2252,63 @@ function clearAsig(){ selectedAsig.clear(); renderAsigList(); rebuildTemplate();
 
 function updateAsigPreview(){
   const prev=document.getElementById('asig-preview');
-  if(!selectedAsig.size){ prev.style.display='none'; return; }
+  const names=[];
+  if(matSelected) names.push(lang==='es'?'Matemáticas':'Matemàtiques');
+  Array.from(selectedAsig).forEach(i=>names.push(getAsigName(ASIGNATURAS[i])));
+  if(!names.length){ prev.style.display='none'; return; }
   prev.style.display='block';
-  prev.textContent=Array.from(selectedAsig).map(i=>getAsigName(ASIGNATURAS[i])).join(' · ');
+  prev.textContent=names.join(' · ');
 }
 
 function setAsigFilter(f,btn){
   asigFilter=f;
   document.querySelectorAll('.asig-filter').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  renderAsigList();
+}
+
+function toggleMatFilter(btn){
+  matSelected = !matSelected;
+  btn.classList.toggle('active', matSelected);
+  updateAsigPreview();
+  rebuildTemplate();
+}
+
+function clearAsig(){
+  selectedAsig.clear();
+  matSelected = false;
+  const matBtn = document.getElementById('af-mat');
+  if(matBtn) matBtn.classList.remove('active');
+  renderAsigList();
+  rebuildTemplate();
+}
+
+function clearTutAll(){
+  // Resetear situación
+  curSit = null; mat2Bienvenida = null; mat2Propuesta = null; mat2ExtraAsig = false;
+  // Resetear asignaturas
+  selectedAsig.clear(); matSelected = false;
+  // Resetear checkboxes
+  ['chk-cfgs','chk-grado','chk-3a','chk-extra-asig'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.checked=false;
+  });
+  // Resetear filtro asignaturas a "Todas"
+  asigFilter='all';
+  document.querySelectorAll('.asig-filter').forEach(b=>b.classList.remove('active'));
+  const afAll=document.getElementById('af-all'); if(afAll) afAll.classList.add('active');
+  const afMat=document.getElementById('af-mat'); if(afMat) afMat.classList.remove('active');
+  // Resetear panel asignaturas
+  asigPanelOpen=false;
+  document.getElementById('asig-panel').classList.remove('open');
+  document.getElementById('asig-toggle-btn').classList.remove('open','visible');
+  document.getElementById('asig-toggle-icon').textContent='▾';
+  // Resetear textarea y título
+  document.getElementById('tpl-ta').value='';
+  document.getElementById('tpl-title').textContent=STATIC[lang]['tpl-empty']||'Selecciona una situación';
+  document.getElementById('tpl-badge').style.display='none';
+  document.getElementById('var-info').style.display='none';
+  // Re-renderizar
+  renderSits();
   renderAsigList();
 }
 
@@ -2343,7 +2414,13 @@ function rebuildTemplate(){
     if(curMat===1 && ['no-rec-prev','no-rec-micro','recom'].includes(s.id)){
       const maxAsig=getMaxAsig();
       if(maxAsig!=='[MAX_ASIG]'){
+        // Singular/plural: si MAX_ASIG es '1', sustituir "1 asignaturas" → "1 asignatura"
+        const n=parseInt(maxAsig);
         result=result.split('[MAX_ASIG]').join(maxAsig);
+        if(n===1){
+          result=result.replace(/\b1 asignaturas\b/g,'1 asignatura');
+          result=result.replace(/\b1 assignatures\b/g,'1 assignatura');
+        }
         tpl.vars.auto=['[NOM]','[HORES]','MAX_ASIG (auto)'];
         tpl.vars.manual=[];
       } else {
@@ -2361,8 +2438,8 @@ function rebuildTemplate(){
   } else {
     const ml=`${curMat}${lang==='es'?'ª':'a'} mat.`;
     document.getElementById('tpl-ta').value=lang==='es'
-      ?`Buenos días, ${nom}:\n\n[Plantilla pendiente: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí irá el contenido]\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya`
-      :`Bon dia, ${nom},\n\n[Plantilla pendent: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí anirà el contingut]\n\nSalutacions,\nÒscar Blázquez\nTutor d'inici — Grau d'Economia\nUniversitat Oberta de Catalunya`;
+      ?`Buenos días, ${nom}:\n\n[Plantilla pendiente: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí irá el contenido]\n\nUn saludo,\nÓscar`
+      :`Bon dia, ${nom},\n\n[Plantilla pendent: ${s.l} — ${s.s}]\n[${ml} · ${stream}]\n\n[Aquí anirà el contingut]\n\nSalutacions,\nÒscar`;
     vi.style.display='none';
   }
 }
