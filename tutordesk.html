@@ -71,8 +71,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .idp-go-btn:hover { opacity: 0.85; }
 .idp-go-btn:disabled { opacity: 0.45; cursor: default; }
 .sync-msg { font-size: 11px; margin-top: 5px; min-height: 16px; }
-.inf-value { font-size: 12px; color: #1a1a2e; background: #f8fafc; border: 1px solid #e2e6ec; border-radius: 6px; padding: 5px 8px; min-height: 28px; }
-.inf-value.empty { color: #b0b8c4; }
+.inf-value { font-size: 11px; font-weight: 500; color: #1a1a2e; }
+.inf-value.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
 .sync-msg.ok  { color: #065f46; }
 .sync-msg.err { color: #991b1b; }
 .sync-msg.info{ color: #1e40af; }
@@ -226,12 +226,12 @@ body.ct-stream .enl-copy-btn.ib-only { display: none; }
 body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
 
 /* ── INFORME ── */
-.inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-.inf-field { background: #fff; border: 1px solid #e2e6ec; border-radius: 8px; padding: 8px 10px; }
+.inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 8px; }
+.inf-field { background: #f8f9fb; border: 1px solid #edf0f4; border-radius: 6px; padding: 4px 8px; display: flex; align-items: baseline; gap: 6px; }
 .inf-field-wide { grid-column: 1 / -1; }
-.inf-field-label { font-size: 10px; color: #8b95a1; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
-.inf-field-val { font-size: 12px; font-weight: 500; color: #1a1a2e; }
-.inf-field-val.empty { color: #c5cdd6; font-style: italic; font-weight: 400; font-size: 11px; }
+.inf-field-label { font-size: 9px; color: #a0a8b4; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.inf-field-val { font-size: 11px; font-weight: 500; color: #1a1a2e; }
+.inf-field-val.empty { color: #c5cdd6; font-style: italic; font-weight: 400; }
 .inf-select { width: 100%; font-size: 12px; color: #1a1a2e; border: none; background: transparent; outline: none; cursor: pointer; padding: 2px 0; }
 .inf-select:focus { outline: none; }
 .inf-textarea { width: 100%; font-size: 12px; color: #1a1a2e; border: none; background: transparent; outline: none; resize: vertical; font-family: inherit; line-height: 1.5; padding: 2px 0; }
@@ -1140,7 +1140,7 @@ body.ct-stream .enl-copy-btn.ct-only { display: inline-block; }
           <div class="tpl-title" id="inf-tpl-title">Informe de seguimiento</div>
           <button class="copy-btn" id="icopy-btn" onclick="doCopy('inf-ta','icopy-btn','icopy-lbl')">⎘ <span id="icopy-lbl">Copiar</span></button>
         </div>
-        <div class="tpl-body"><textarea id="inf-ta" style="min-height:160px" readonly></textarea></div>
+        <div class="tpl-body"><textarea id="inf-ta" style="min-height:320px" readonly></textarea></div>
       </div>
     </div>
 
@@ -2526,41 +2526,41 @@ document.addEventListener('click', function(e) {
 const INF_TEXTS = {
   es: {
     saludo: 'Hola:',
-    intro: (nom) => `Te paso el informe de seguimiento de ${nom}, estudiante del Grado de Economía.`,
+    intro: (nom) => `Te paso el informe de seguimiento de ${nom}, estudiante del Grado de Economía en el que he ejercido como tutor de inicio.`,
     bg: {
-      si:         'Ha seguido correctamente la docencia durante los semestres que lleva cursados en el grado, sin incidencias reseñables.',
-      irregular:  'El seguimiento de la docencia ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres que lleva cursados en el grado.',
-      problemes:  'Ha presentado dificultades significativas en el seguimiento de la docencia durante los semestres que lleva cursados en el grado.'
+      si:         'En cuanto al seguimiento de la docencia, lo ha realizado de forma correcta durante los semestres cursados en el grado, sin incidencias reseñables.',
+      irregular:  'En cuanto al seguimiento de la docencia, este ha sido irregular, con altibajos en su rendimiento a lo largo de los semestres cursados en el grado.',
+      problemes:  'En cuanto al seguimiento de la docencia, ha presentado dificultades significativas a lo largo de los semestres cursados en el grado.'
     },
-    bh: (n) => `En cuanto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas.`,
+    bh: (n) => `En cuanto a la carga lectiva, le recomiendo matricularse de ${n} asignatura${n==='1'?'':'s'} por semestre en las próximas matrículas, teniendo en cuenta su disponibilidad y ritmo de trabajo.`,
     bi: {
-      ambos:  'Asimismo, ha solicitado tanto la EEP como el RAEP durante los semestres que lleva estudiando en el grado.',
-      eep:    'Asimismo, ha solicitado la EEP durante los semestres que lleva estudiando en el grado.',
-      raep:   'Asimismo, ha solicitado el RAEP durante los semestres que lleva estudiando en el grado.',
-      nada:   'En cuanto a los trámites de convalidación, no ha solicitado ninguno durante los semestres que lleva estudiando en el grado.'
+      ambos:  'Por otro lado, ha solicitado tanto la EEP como el RAEP durante su etapa en el grado.',
+      eep:    'Por otro lado, ha solicitado la EEP durante su etapa en el grado.',
+      raep:   'Por otro lado, ha solicitado el RAEP durante su etapa en el grado.',
+      nada:   'Por otro lado, no ha solicitado ningún trámite de convalidación durante su etapa en el grado.'
     },
     bj: {
-      bona:       'Por otro lado, la comunicación con el tutor ha sido buena y ha seguido las directrices indicadas en todo momento.',
-      regular:    'Por otro lado, la comunicación con el tutor ha sido irregular, con respuestas intermitentes a los correos enviados.',
-      inexistent: 'Por otro lado, la comunicación con el tutor ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido una interacción relevante.'
+      bona:       'En cuanto a la comunicación, ha mantenido un contacto fluido con el tutor y ha seguido las orientaciones indicadas en todo momento.',
+      regular:    'En cuanto a la comunicación, esta ha sido irregular, con respuestas intermitentes a los correos enviados.',
+      inexistent: 'En cuanto a la comunicación, esta ha sido prácticamente inexistente; no ha respondido a los correos enviados ni se ha producido ninguna interacción relevante.'
     },
     bk: {
-      si:     'Por todo ello, considero que el estudiante necesita un seguimiento cercano por parte del tutor de seguimiento.',
-      unpoco: 'Por todo ello, considero que el estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.',
-      no:     'Por todo ello, considero que el estudiante no requiere un seguimiento especial por parte del tutor de seguimiento.'
+      si:     'Por todo lo expuesto, considero que este estudiante requiere un seguimiento cercano por parte del tutor de seguimiento.',
+      unpoco: 'Por todo lo expuesto, considero que este estudiante podría beneficiarse de un seguimiento puntual por parte del tutor de seguimiento.',
+      no:     'Por todo lo expuesto, considero que este estudiante no requiere ningún seguimiento especial por parte del tutor de seguimiento.'
     },
-    bl: (txt) => `En relación con otras casuísticas a tener en cuenta, señalar que ${txt}`,
-    bm: (txt) => `Además, ${txt}`,
+    bl: (txt) => `En cuanto a otras casuísticas a tener en cuenta, cabe señalar que ${txt}.`,
+    bm: (txt) => `Asimismo, ${txt}.`,
     bf: {
-      personal: 'Finalmente, señalar que su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de conocimientos.',
-      laboral:  'Finalmente, señalar que su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.',
-      primeros: 'Finalmente, señalar que accede por primera vez a estudios universitarios, lo que ha supuesto un reto adicional en su proceso de adaptación al grado.'
+      personal: 'Finalmente, su motivación principal para cursar el grado es el enriquecimiento personal y la adquisición de nuevos conocimientos.',
+      laboral:  'Finalmente, su motivación principal para cursar el grado es la mejora de su situación laboral y el desarrollo profesional.',
+      primeros: 'Finalmente, cabe destacar que accede por primera vez a estudios universitarios, lo que ha supuesto un reto adicional en su proceso de adaptación al grado.'
     },
     despedida: 'Quedo a tu disposición para cualquier consulta.\n\nUn saludo,\nÓscar Blázquez\nTutor de inicio — Grado de Economía\nUniversitat Oberta de Catalunya'
   },
   ca: {
     saludo: 'Hola,',
-    intro: (nom) => `Et passo l'informe de seguiment de ${nom}, estudiant del Grau d'Economia.`,
+    intro: (nom) => `Et passo l'informe de seguiment de ${nom}, estudiant del Grau d'Economia del qual he exercit com a tutor d'inici.`,
     bg: {
       si:         'Ha seguit correctament la docència durant els semestres que porta cursats al grau, sense incidències destacables.',
       irregular:  'El seguiment de la docència ha estat irregular, amb alts i baixos en el seu rendiment al llarg dels semestres que porta cursats al grau.',
@@ -2583,8 +2583,8 @@ const INF_TEXTS = {
       unpoco: 'Per tot això, considero que l\'estudiant podria beneficiar-se d\'un seguiment puntual per part del tutor de seguiment.',
       no:     'Per tot això, considero que l\'estudiant no requereix un seguiment especial per part del tutor de seguiment.'
     },
-    bl: (txt) => `Pel que fa a altres casuístiques a tenir en compte, cal assenyalar que ${txt}`,
-    bm: (txt) => `A més, ${txt}`,
+    bl: (txt) => `Pel que fa a altres casuístiques a tenir en compte, cal assenyalar que ${txt}.`,
+    bm: (txt) => `Així mateix, ${txt}.`,
     bf: {
       personal: "Finalment, cal assenyalar que la seva motivació principal per cursar el grau és l'enriquiment personal i l'adquisició de coneixements.",
       laboral:  'Finalment, cal assenyalar que la seva motivació principal per cursar el grau és la millora de la seva situació laboral i el desenvolupament professional.',
@@ -2595,17 +2595,11 @@ const INF_TEXTS = {
 };
 
 function rebuildInforme(d) {
-  // d = objeto con datos del Sheets (bf, bg, bh, bi, bj, bk, bl, bm)
-  // Si no hay datos, ocultar el informe
-  if (!d) {
-    document.getElementById('inf-tpl-wrap').style.display = 'none';
-    return;
-  }
+  if (!d) { document.getElementById('inf-tpl-wrap').style.display = 'none'; return; }
 
   const t   = INF_TEXTS[lang];
   const nom = getNom();
 
-  // Leer directamente del objeto de datos del Sheets
   const bf = (d.bf || '').trim();
   const bg = (d.bg || '').trim();
   const bh = (d.bh || '').trim();
@@ -2620,32 +2614,79 @@ function rebuildInforme(d) {
     return;
   }
 
+  // Normalizar claves del Sheets a las claves internas del diccionario
+  // Acepta tanto la clave interna como el texto completo del Sheets (cualquier idioma)
+  function normBG(v) {
+    const map = {
+      'si':'si','sí':'si','cap problema':'si','sin problemas':'si','sin problema':'si',
+      'irregular':'irregular',
+      'problemes':'problemes','problemas':'problemes','problemes':'problemes'
+    };
+    return map[v.toLowerCase()] || null;
+  }
+  function normBI(v) {
+    const map = {
+      'ambos':'ambos','aep y raep':'ambos','eep y raep':'ambos',
+      'aep y raep solicitat':'ambos','aep i raep sol·licitat':'ambos',
+      'eep y raep solicitado':'ambos','eep i raep sol·licitat':'ambos',
+      'eep':'eep','eep solicitado':'eep','aep sol·licitat':'eep','aep':'eep',
+      'aep solicitat':'eep','eep solicitat':'eep',
+      'raep':'raep','raep solicitado':'raep','raep sol·licitat':'raep','raep solicitat':'raep',
+      'nada':'nada','res':'nada','ninguno':'nada','cap':'nada'
+    };
+    return map[v.toLowerCase()] || null;
+  }
+  function normBJ(v) {
+    const map = {
+      'bona':'bona','buena':'bona','bona, segueix directrius':'bona',
+      'buena, sigue directrices':'bona','bona segueix directrius':'bona',
+      'regular':'regular',
+      'inexistent':'inexistent','inexistente':'inexistent','inexistent':'inexistent'
+    };
+    return map[v.toLowerCase()] || null;
+  }
+  function normBK(v) {
+    const map = {
+      'si':'si','sí':'si','yes':'si',
+      'unpoco':'unpoco','un poco':'unpoco','una mica':'unpoco','poco':'unpoco','poc':'unpoco',
+      'no':'no'
+    };
+    return map[v.toLowerCase()] || null;
+  }
+  function normBF(v) {
+    const map = {
+      'personal':'personal','enriquecimiento personal':'personal','enriquiment personal':'personal',
+      'laboral':'laboral','motivos laborales':'laboral','motius laborals':'laboral',
+      'primeros':'primeros','primeros estudios universitarios':'primeros',
+      'primers estudis universitaris':'primeros'
+    };
+    return map[v.toLowerCase()] || null;
+  }
+
   const parts = [];
   parts.push(t.saludo);
   parts.push('');
   parts.push(t.intro(nom));
 
-  // BG: Seguiment docència — valor directo del Sheets
-  if (bg) parts.push('\n' + (t.bg[bg.toLowerCase()] || bg));
+  const bgKey = normBG(bg);
+  if (bg) parts.push('\n' + (bgKey ? t.bg[bgKey] : bg));
 
-  // BH: Càrrega lectiva — número directo
   if (bh) parts.push('\n' + t.bh(bh));
 
-  // BI: AEP/RAEP — valor directo del Sheets
-  if (bi) parts.push('\n' + (t.bi[bi.toLowerCase()] || bi));
+  const biKey = normBI(bi);
+  if (bi) parts.push('\n' + (biKey ? t.bi[biKey] : bi));
 
-  // BJ: Comunicació — valor directo del Sheets
-  if (bj) parts.push('\n' + (t.bj[bj.toLowerCase()] || bj));
+  const bjKey = normBJ(bj);
+  if (bj) parts.push('\n' + (bjKey ? t.bj[bjKey] : bj));
 
-  // BK: Necesita seguimiento — valor directo del Sheets
-  if (bk) parts.push('\n' + (t.bk[bk.toLowerCase()] || bk));
+  const bkKey = normBK(bk);
+  if (bk) parts.push('\n' + (bkKey ? t.bk[bkKey] : bk));
 
-  // BL y BM: texto libre
   if (bl) parts.push('\n' + t.bl(bl));
   if (bm) parts.push('\n' + t.bm(bm));
 
-  // BF: Motivaciones — valor directo del Sheets
-  if (bf) parts.push('\n' + (t.bf[bf.toLowerCase()] || bf));
+  const bfKey = normBF(bf);
+  if (bf) parts.push('\n' + (bfKey ? t.bf[bfKey] : bf));
 
   parts.push('\n\n' + t.despedida);
 
